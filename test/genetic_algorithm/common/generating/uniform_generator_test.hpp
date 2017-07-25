@@ -29,13 +29,13 @@ struct uniform_generator_test {
     static constexpr auto test_cases = std::make_tuple(
             std::make_tuple<std::size_t, std::size_t>(0, 100, 1000),
             std::make_tuple(
-                    utility::make_array_of<std::size_t>(0, 10, 70),
-                    utility::make_array_of<std::size_t>(10, 50, 100),
+                    utility::array::make_of<std::size_t>(0, 10, 70),
+                    utility::array::make_of<std::size_t>(10, 50, 100),
                     1000),
             std::make_tuple<double, double>(-10.0, 100.0, 1000),
             std::make_tuple(
-                    utility::make_array_of<double>(0, -10, -100),
-                    utility::make_array_of<double>(10.0, 50, 100),
+                    utility::array::make_of<double>(0, -10, -100),
+                    utility::array::make_of<double>(10.0, 50, 100),
                     1000)
     );
 
@@ -49,10 +49,12 @@ struct uniform_generator_test {
         auto generator = gen::make_uniform<3>(leftBounds, rightBounds);
         auto codes = generator.generate(amount);
         for (std::size_t k = 0; k < codes.size(); ++k) {
-            auto ge = utility::array_compare<std::greater_equal>(codes[k], generator.left_bounds());
-            auto le = utility::array_compare<std::less_equal>(codes[k], generator.right_bounds());
-            auto cmp = utility::array_map(std::logical_and<bool>{}, ge, le);
-            bool result = utility::array_reduce(cmp, std::logical_and<bool>{});
+            auto ge = utility::array::compare<std::greater_equal>(codes[k], generator.left_bounds());
+            auto le = utility::array::compare<std::less_equal>(codes[k], generator.right_bounds());
+
+            auto cmp = utility::array::op(std::logical_and<bool>{}, ge, le);
+
+            bool result = utility::array::reduce(cmp, std::logical_and<bool>{});
             if (!result)
                 int breakPoint = 0;
             assert(result);

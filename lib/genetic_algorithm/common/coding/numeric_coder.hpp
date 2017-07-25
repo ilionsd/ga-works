@@ -8,77 +8,105 @@
 #ifndef LIB_GENETIC_ALGORITHM_COMMON_CODING_NUMERIC_CODER_HPP_
 #define LIB_GENETIC_ALGORITHM_COMMON_CODING_NUMERIC_CODER_HPP_
 
-#include <cassert>
+
 #include <cstddef>
 #include <cmath>
-#include <valarray>
+#include <array>
+#include <bits/stl_function.h>
 #include <algorithm>
+
+
+#include "../../../utility/array.hpp"
+#include "../../../utility/function.hpp"
+
 
 namespace genetic_algorithm {
 namespace common {
 namespace coding {
 
-template<typename T, std::size_t SpaceSize>
+
+template<typename T, std::size_t N>
+inline std::array<T, N> calc_interval_sizes(
+        const std::array<std::size_t, N>& geneSize,
+        const std::array<T, N>& leftBounds,
+        const std::array<T, N>& rightBounds)
+{
+    using utility::array::op;
+    std::size_t intervalNumber = op(std::minus<std::size_t>{},
+            op(utility::function::bit_shift_left<std::size_t>{}, 1, geneSize), 1);
+    std::array<T, N> dimSize = op(std::minus<T>{}, rightBounds, leftBounds);
+    std::array<T, N> intervalSize = op(std::divides<T>{}, dimSize, intervalNumber);
+    return intervalSize;
+};
+
+
+template<typename T1, typename T2, std::size_t N>
 class numeric_coder {
 public:
-    typedef T numeric_type;
-    constexpr static std::size_t space_size = SpaceSize;
+    typedef T1 fp_type;
+    typedef T2 nm_type;
+    constexpr static std::size_t space_size = N;
+    typedef std::array<nm_type, space_size> array_nm_type;
+    typedef std::array<fp_type, space_size> array_fp_type;
 
     inline constexpr numeric_coder(
             const std::size_t geneSize,
-            const std::valarray<double> leftBounds,
-            const std::valarray<double> rightBounds) noexcept :
-        mLeftBounds {leftBounds},
+            const array_fp_type& leftBounds,
+            const array_fp_type& rightBounds) noexcept :
+        mLeftBounds {},
         mIntervalSizes {}
     {
-        assert(leftBounds.size() == space_size);
-        assert(rightBounds.size() == space_size);
-        mIntervalSizes = (rightBounds - leftBounds) / ((1 << geneSize) - 1);
+        mLeftBounds = leftBounds;
+        mIntervalSizes = cals_interval_sizes(utility::array::fill<std::size_t, space_size>(geneSize), leftBounds, rightBounds);
     };
 
     inline constexpr numeric_coder(
-            const std::valarray<std::size_t>& geneSizes,
-            const std::valarray<double> leftBounds,
-            const std::valarray<double> rightBounds) noexcept :
-        mLeftBounds {leftBounds},
+            const std::array<std::size_t, space_size>& geneSizes,
+            const array_fp_type& leftBounds,
+            const array_fp_type& rightBounds) noexcept :
+        mLeftBounds {},
         mIntervalSizes {}
     {
-        assert(leftBounds.size() == space_size);
-        assert(rightBounds.size() == space_size);
-        mIntervalSizes = (rightBounds - leftBounds) / ((1 << geneSizes) - 1);
+        mLeftBounds = leftBounds;
+        mIntervalSizes = cals_interval_sizes(geneSizes, leftBounds, rightBounds);
     };
 
-    inline constexpr const std::valarray<numeric_type>&
+    inline constexpr const array_fp_type&
     left_bounds() const {
         return mLeftBounds;
     };
-    inline constexpr std::valarray<numeric_type>&
+    inline constexpr array_fp_type&
     left_bounds() {
         return mLeftBounds;
     };
 
-    inline constexpr const std::valarray<numeric_type>&
+    inline constexpr const array_fp_type&
     interval_sizes() const {
         return mIntervalSizes;
     };
-    inline constexpr std::valarray<numeric_type>&
+    inline constexpr array_fp_type&
     interval_sizes() {
         return mIntervalSizes;
     };
 
-    constexpr std::valarray<numeric_type> encode(const std::valarray<double>& point) const {
-        std::valarray<double> scaledPoint = ((point - left_bounds()) / interval_sizes());
-        std::valarray<numeric_type> numericCodes {space_size};
-        std::transform(std::begin(scaledPoint), std::end(scaledPoint), std::begin(numericCodes), std::round);
+    constexpr array_nm_type encode(const array_fp_type& point) const {
+        using utility::array::op;
+        array_fp_type scaledPoint = op(std::divides<fp_type>{},
+                op(std::minus<fp_type>{}, point, left_bounds()), interval_sizes());
+        array_nm_type numericCodes = utility::array::map([](fp_type x) {return nm_type{std::round(x)};}, scaledPoint);
         return numericCodes;
     };
 
-    constexpr std::valarray<double> decode(const std::valarray<numeric_type>& numericCodes) const {
-        return left_bounds() + numericCodes * interval_sizes();
+    constexpr array_fp_type decode(const array_nm_type& numericCodes) const {
+        using utility::array::op;
+        array_fp_type point = op(std::plus<fp_type>{},
+                left_bounds(), op(std::multiplies<fp_type>{},
+                        interval_sizes(), numericCodes));
+        return point;
     };
 
 private:
-    std::valarray<double> mLeftBounds, mIntervalSizes;
+    array_fp_type mLeftBounds, mIntervalSizes;
 
 };  //-- class numeric_coder --
 

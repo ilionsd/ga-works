@@ -37,6 +37,10 @@ public:
     using base_type::right_bounds;
     using base_type::generator;
 
+    inline auto operator() (const std::size_t amount) const {
+        return generate(amount);
+    };
+
     std::vector<std::array<value_type, space_size>> generate(const std::size_t amount) const {
         std::vector<std::array<value_type, space_size>> v { amount, std::array<value_type, space_size>{} };
         for (std::size_t dim = 0; dim < space_size; ++dim) {
