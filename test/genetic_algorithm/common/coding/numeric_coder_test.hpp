@@ -9,10 +9,16 @@
 #define TEST_GENETIC_ALGORITHM_COMMON_CODING_NUMERIC_CODER_TEST_HPP_
 
 
+#include <cstddef>
+#include <cassert>
 #include <tuple>
 #include <array>
+#include <valarray>
+#include <type_traits>
 
-#include "../../../../lib/utility/array.hpp"
+#include "../../../../lib/utility/valarray.hpp"
+#include "../../../../lib/utility/vector.hpp"
+#include "../../../../lib/utility/stlmath.hpp"
 
 #include "../../../../lib/genetic_algorithm/common/generating/uniform_generator.hpp"
 #include "../../../../lib/genetic_algorithm/common/coding/numeric_coder.hpp"
@@ -29,62 +35,53 @@ struct numeric_coder_test {
                     utility::array::make_of<std::size_t>(5, 5, 6, 3, 10),
                     utility::array::make_of<double>( 0.0, 10.0,  1.0, 9.00, -1.0),
                     utility::array::make_of<double>(20.0, 30.0, 15.0, 9.99,  1.0),
-                    100
+                    std::size_t(1000)
             )
     );
 
     template<typename... Ts>
     constexpr void operator() (const std::tuple<Ts...>& testCase) const {
-        auto geneSizes = std::get<0>(testCase);
-        auto leftBounds = std::get<1>(testCase);
-        auto rightBounds = std::get<2>(testCase);
+        auto geneSizes   = convert_if_array(std::get<0>(testCase));
+        auto leftBounds  = convert_if_array(std::get<1>(testCase));
+        auto rightBounds = convert_if_array(std::get<2>(testCase));
         auto amount = std::get<3>(testCase);
 
+        std::size_t spaceSize = geneSizes.size();
+
         namespace gen = ::genetic_algorithm::common::generating;
-        auto dGen = gen::make_uniform(leftBounds, rightBounds);
-        auto points = dGen(amount);
+        auto dGen = gen::make_uniform(spaceSize, leftBounds, rightBounds);
+        auto pointsRef = dGen(amount);
 
-        auto codes = fp_to_nm(points, geneSizes, leftBounds, rightBounds);
-        auto pointsDec = nm_to_fp(codes, geneSizes, leftBounds, rightBounds);
-    };
+        typedef typename decltype(pointsRef)::value_type::value_type fp_type;
+        typedef unsigned long nm_type;
 
-    template<typename NT, typename FT, std::size_t N>
-    std::vector<std::array<NT, N>> fp_to_nm(
-            const std::vector<std::array<FT, N>>& points,
-            const std::array<std::size_t, N>& geneSizes,
-            const std::array<FT, N>& leftBounds,
-            const std::array<FT, N>& rightBounds) const
-    {
+
         namespace code = ::genetic_algorithm::common::coding;
-        code::numeric_coder<FT, NT, N> coder { geneSizes, leftBounds, rightBounds };
+        code::numeric_coder<fp_type, nm_type> coder ( geneSizes, leftBounds, rightBounds );
 
-        std::vector<std::array<NT, N>> codes { points.size() };
-        for (std::size_t k = 0; k < points.size(); ++k) {
-            codes[k] = coder.encode(points[k]);
+        auto codes = utility::vector::map([&coder](typename decltype(pointsRef)::value_type x){return coder.encode(x);}, pointsRef);
+        auto pointsDec = utility::vector::map([&coder](typename decltype(codes)::value_type x){return coder.decode(x);}, codes);
+
+        for (std::size_t k = 0; k < amount; ++k) {
+            std::valarray<bool> cmp = std::abs(pointsRef[k] - pointsDec[k]) < (coder.interval_sizes() / 2.0);
+            bool result = utility::valarray::reduce(std::logical_and<bool>{}, cmp);
+            assert(result);
         }
-        return codes;
     };
 
-    template<typename FT, typename NT, std::size_t N>
-    std::vector<std::array<FT, N>> nm_to_fp(
-            const std::vector<std::array<NT, N>>& codes,
-            const std::array<std::size_t, N>& geneSizes,
-            const std::array<FT, N>& leftBounds,
-            const std::array<FT, N>& rightBounds) const
-    {
-        namespace code = ::genetic_algorithm::common::coding;
-        code::numeric_coder<FT, NT, N> coder { geneSizes, leftBounds, rightBounds };
+    template<typename T, std::size_t N>
+    constexpr auto convert_if_array(const std::array<T, N>& arr) const -> std::valarray<T> {
+        return utility::valarray::from(arr);
+    }
+    template<typename T>
+    constexpr auto convert_if_array(const T val) const -> T {
+        return val;
+    }
 
-        std::vector<std::array<FT, N>> points { codes.size() };
-        for (std::size_t k = 0; k < codes.size(); ++k) {
-            points[k] = coder.decode(codes[k]);
-        }
-        return points;
-    };
 
 };  //-- struct numeric_coder_test --
 
-constexpr auto numeric_coder_test::test_cases;
+constexpr decltype(numeric_coder_test::test_cases) numeric_coder_test::test_cases;
 
 };  //-- namespace coding --
 };  //-- namespace common --

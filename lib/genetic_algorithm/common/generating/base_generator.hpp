@@ -9,55 +9,43 @@
 #define LIB_GENETIC_ALGORITHM_COMMON_GENERATING_BASE_GENERATOR_HPP_
 
 #include <cstddef>
+#include <cassert>
 #include <random>
-#include <array>
+#include <valarray>
+#include <algorithm>
 
 namespace genetic_algorithm {
 namespace common {
 namespace generating {
 
-template<typename T, std::size_t SpaceSize>
+template<typename T>
 class base_generator {
 public:
     typedef T value_type;
-    constexpr static std::size_t space_size = SpaceSize;
-    typedef std::array<value_type, space_size> array_type;
+    typedef std::valarray<value_type> array_type;
 
-    inline constexpr base_generator(const value_type leftBound, const value_type rightBound) :
-            mGenerator {},
-            mLeftBounds {},
-            mRightBounds {}
+    inline constexpr base_generator(const std::size_t spaceSize, const value_type leftBound, const value_type rightBound) :
+            mGenerator (),
+            mSpaceSize ( spaceSize ),
+            mLeftBounds  ( leftBound , spaceSize ),
+            mRightBounds ( rightBound, spaceSize )
+    {};
+    inline constexpr base_generator(const std::size_t spaceSize, const array_type& leftBounds, const array_type& rightBounds) :
+            mGenerator (),
+            mSpaceSize ( spaceSize ),
+            mLeftBounds  ( leftBounds  ),
+            mRightBounds ( rightBounds )
     {
-        mLeftBounds.fill(leftBound);
-        mRightBounds.fill(rightBound);
-    };
-    inline constexpr base_generator(const array_type& leftBounds, const value_type rightBound) :
-            mGenerator {},
-            mLeftBounds {},
-            mRightBounds {}
-    {
-        mLeftBounds = leftBounds;
-        mRightBounds.fill(rightBound);
-    };
-    inline constexpr base_generator(const value_type leftBound, const array_type& rightBounds) :
-            mGenerator {},
-            mLeftBounds {},
-            mRightBounds {}
-    {
-        mLeftBounds.fill(leftBound);
-        mRightBounds = rightBounds;
-    };
-    inline constexpr base_generator(const array_type& leftBounds, const array_type& rightBounds) :
-            mGenerator {},
-            mLeftBounds {},
-            mRightBounds {}
-    {
-        mLeftBounds = leftBounds;
-        mRightBounds = rightBounds;
+        assert(mSpaceSize == mLeftBounds .size());
+        assert(mSpaceSize == mRightBounds.size());
     };
 
     inline constexpr std::mt19937_64& generator() const {
         return mGenerator;
+    };
+
+    inline constexpr std::size_t space_size() const {
+        return mSpaceSize;
     };
 
     inline constexpr const array_type& left_bounds() const {
@@ -70,6 +58,7 @@ public:
 
 private:
     mutable std::mt19937_64 mGenerator;
+    std::size_t mSpaceSize;
     array_type mLeftBounds, mRightBounds;
 
 };

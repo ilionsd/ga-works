@@ -10,6 +10,7 @@
 
 
 #include <cstddef>
+#include <functional>
 #include <array>
 #include <type_traits>
 
@@ -36,35 +37,43 @@ inline constexpr std::array<T, N> fill(const T val) {
 };
 
 
-template<template<typename > class C, typename T1, typename T2, std::size_t N>
-constexpr auto compare(const std::array<T1, N>& v1, const std::array<T2, N>& v2) -> std::array<bool, N> {
-    std::array<bool, N> cmp {};
-    C<std::common_type_t<T1, T2>> comparator;
-    for (std::size_t k = 0; k < N; ++k) {
-        cmp[k] = comparator(v1[k], v2[k]);
-    }
-    return cmp;
+template<typename C>
+struct compare {
+    typedef C comparator_type;
+
+    template<typename... Ts>
+    inline constexpr compare(const Ts... args) :
+        comparator {  args... }
+    {};
+
+    template<typename T1, typename T2, std::size_t N>
+    constexpr std::array<bool, N> operator() (const std::array<T1, N>& v1, const std::array<T2, N>& v2) const {
+        std::array<bool, N> cmp {};
+        for (std::size_t k = 0; k < N; ++k) {
+            cmp[k] = comparator(v1[k], v2[k]);
+        }
+        return cmp;
+    };
+    template<typename T1, typename T2, std::size_t N>
+    constexpr std::array<bool, N> operator() (const std::array<T1, N>& v1, const T2 v2) const {
+        std::array<bool, N> cmp {};
+        for (std::size_t k = 0; k < N; ++k) {
+            cmp[k] = comparator(v1[k], v2);
+        }
+        return cmp;
+    };
+    template<typename T1, typename T2, std::size_t N>
+    constexpr std::array<bool, N> operator() (const T1 v1, const std::array<T2, N>& v2) const {
+        std::array<bool, N> cmp {};
+        for (std::size_t k = 0; k < N; ++k) {
+            cmp[k] = comparator(v1, v2[k]);
+        }
+        return cmp;
+    };
+
+    comparator_type comparator;
 };
 
-template<template<typename > class C, typename T1, typename T2, std::size_t N>
-constexpr auto compare(const std::array<T1, N>& v1, const T2 v2) -> std::array<bool, N> {
-    std::array<bool, N> cmp {};
-    C<std::common_type_t<T1, T2>> comparator;
-    for (std::size_t k = 0; k < N; ++k) {
-        cmp[k] = comparator(v1[k], v2);
-    }
-    return cmp;
-};
-
-template<template<typename > class C, typename T1, typename T2, std::size_t N>
-constexpr auto compare(const T1 v1, const std::array<T2, N>& v2) -> std::array<bool, N> {
-    std::array<bool, N> cmp {};
-    C<std::common_type_t<T1, T2>> comparator;
-    for (std::size_t k = 0; k < N; ++k) {
-        cmp[k] = comparator(v1, v2[k]);
-    }
-    return cmp;
-};
 
 
 template<typename F, typename T, std::size_t N>
@@ -90,7 +99,7 @@ constexpr auto op(const F& f, const std::array<T1, N>& v1, const std::array<T2, 
 
 template<typename F, typename T1, typename T2, std::size_t N>
 constexpr auto op(const F& f, const std::array<T1, N>& v1, const T2 v2)
--> std::array<decltype( f( v1[0], v2 ) ), N> {
+-> typename std::enable_if<std::is_arithmetic<T2>::value && std::is_convertible<T1, T2>::value, std::array<decltype( f( v1[0], v2 ) ), N>>::type {
     typedef decltype( f( v1[0], v2 ) ) Ret;
     std::array<Ret, N> ret {};
     for (std::size_t k = 0; k < N; ++k)
@@ -100,7 +109,7 @@ constexpr auto op(const F& f, const std::array<T1, N>& v1, const T2 v2)
 
 template<typename F, typename T1, typename T2, std::size_t N>
 constexpr auto op(const F& f, const T1 v1, const std::array<T2, N>& v2)
--> std::array<decltype( f( v1, v2[0] ) ), N> {
+-> typename std::enable_if<std::is_arithmetic<T1>::value && std::is_convertible<T1, T2>::value, std::array<decltype( f( v1, v2[0] ) ), N>>::type {
     typedef decltype( f( v1, v2[0] ) ) Ret;
     std::array<Ret, N> ret {};
     for (std::size_t k = 0; k < N; ++k)

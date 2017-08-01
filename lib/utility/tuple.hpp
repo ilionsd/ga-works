@@ -33,6 +33,12 @@ constexpr void for_each(const F& func, const std::tuple<Ts...>& tuple) {
 };
 
 
+template<typename T, typename... Ts>
+T from_tuple(const std::tuple<Ts...>& args) {
+
+}
+
+
 
 template<typename... Ts>
 class stack {

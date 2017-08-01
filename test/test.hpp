@@ -20,7 +20,7 @@ namespace test {
 
 template<std::size_t I>
 inline constexpr void print_test_index() {
-    std::cout << "Running " << I << " test" << std::endl;
+    std::cout << "Running test " << I << std::endl;
 };
 
 template<typename TestT, typename... Ts, std::size_t... I>

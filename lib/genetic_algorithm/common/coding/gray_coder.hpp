@@ -11,62 +11,60 @@
 #include <cassert>
 #include <cstddef>
 #include <type_traits>
-#include <array>
 #include <valarray>
 #include <numeric>
+
+#include "../../../types/primitive_types.hpp"
+#include "../../../utility/valarray.hpp"
 
 namespace genetic_algorithm {
 namespace common {
 namespace coding {
 
-template<typename T, std::size_t SpaceSize>
+template<typename T>
 class gray_coder {
 public:
-    typedef T numeric_type;
-    constexpr static std::size_t space_size = SpaceSize;
-    typedef std::array<numeric_type, space_size> array_type;
+    typedef types::unsigned_integer_t<T> numeric_type;
+    typedef std::valarray<numeric_type> array_type;
 
-    static_assert(std::is_unsigned<numeric_type>::value, "Numeric type should be unsigned");
-
-    inline constexpr gray_coder(const numeric_type geneSize) noexcept :
-        mGeneSizes {geneSize, space_size}
+    inline constexpr gray_coder(const std::size_t spaceSize, const std::size_t geneSize) noexcept :
+        mGeneSizes { geneSize, spaceSize }
     {};
-    inline constexpr gray_coder(const array_type& geneSizes) noexcept :
-        mGeneSizes {geneSizes}
+    inline constexpr gray_coder(const std::valarray<std::size_t>& geneSizes) noexcept :
+        mGeneSizes { geneSizes }
     {};
 
-    inline constexpr const array_type&
+    inline constexpr std::size_t space_size() const {
+        return gene_sizes().size();
+    };
+    inline constexpr const std::valarray<std::size_t>&
     gene_sizes() const {
         return mGeneSizes;
     };
-    inline constexpr array_type&
-    gene_sizes() {
-        return mGeneSizes;
-    };
 
-    constexpr std::vector<bool> encode(const array_type& numericCodes) const {
-        assert(numericCodes.size() == space_size);
+    constexpr std::valarray<bool> encode(const array_type& ncode) const {
+        assert(ncode.size() == space_size());
 
-        std::size_t codeSize = std::accumulate(std::begin(gene_sizes()), std::end(gene_sizes()), 0);
-        std::vector<bool> grayCodes {codeSize};
+        std::size_t codeSize = utility::valarray::reduce(std::plus<numeric_type>{}, gene_sizes());
+        std::valarray<bool> gcode {codeSize};
 
         std::size_t geneIndex = 0;
         for (std::size_t dim = 0; dim < space_size; ++dim) {
-            numeric_type div = numericCodes[dim];
+            numeric_type div = ncode[dim];
             numeric_type prevRem = div & 0x1;
             for (std::size_t bitIndex = 0; bitIndex < gene_sizes()[dim]; ++bitIndex) {
                 div >>= 1;
                 T nextRem = div & 0x1;
-                grayCodes[geneIndex + bitIndex] = bool(nextRem ^ prevRem);
+                gcode[geneIndex + bitIndex] = bool(nextRem ^ prevRem);
             }
             geneIndex += gene_sizes()[dim];
         }
 
-        return grayCodes;
+        return gcode;
     };
 
-    constexpr array_type decode(const std::vector<bool>& grayCodes) const {
-        array_type numericCodes {space_size};
+    constexpr array_type decode(const std::valarray<bool>& gcode) const {
+        array_type ncode {space_size()};
 
         std::size_t geneIndex = 0;
         for (std::size_t dim = 0; dim < space_size; ++dim) {
@@ -74,18 +72,18 @@ public:
             bool sum = 0;
             geneIndex += gene_sizes()[dim];
             for (std::size_t bitIndex = 0; bitIndex < gene_sizes()[dim]; ++bitIndex) {
-                sum ^= grayCodes[geneIndex - 1 - bitIndex];
+                sum ^= gcode[geneIndex - 1 - bitIndex];
                 num <<= 1;
                 num += sum;
             }
-            numericCodes[dim] = num;
+            ncode[dim] = num;
         }
 
-        return numericCodes;
+        return ncode;
     };
 
 private:
-    array_type mGeneSizes;
+    std::valarray<std::size_t> mGeneSizes;
 
 };  //-- class gray_coder --
 
