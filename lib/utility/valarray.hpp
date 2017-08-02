@@ -8,6 +8,7 @@
 #ifndef LIB_UTILITY_VALARRAY_HPP_
 #define LIB_UTILITY_VALARRAY_HPP_
 
+
 #include <cstddef>
 #include <valarray>
 #include <array>
@@ -15,7 +16,9 @@
 #include <algorithm>
 #include <type_traits>
 
+
 #include "stlmath.hpp"
+
 
 namespace utility {
 namespace valarray {

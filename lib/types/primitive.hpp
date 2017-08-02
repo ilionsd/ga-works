@@ -5,8 +5,8 @@
  *      Author: ilion
  */
 
-#ifndef LIB_TYPES_PRIMITIVE_TYPES_HPP_
-#define LIB_TYPES_PRIMITIVE_TYPES_HPP_
+#ifndef LIB_TYPES_PRIMITIVE_HPP_
+#define LIB_TYPES_PRIMITIVE_HPP_
 
 
 #define PRIMITIVE_TYPES_TEMPLATE_DEFINE( TEMPLATE_NAME) \
@@ -60,4 +60,4 @@ using floating_point_t = typename floating_point<T>::type;
 #undef PRIMITIVE_TYPES_TEMPLATE_SPEC
 
 
-#endif /* LIB_TYPES_PRIMITIVE_TYPES_HPP_ */
+#endif /* LIB_TYPES_PRIMITIVE_HPP_ */

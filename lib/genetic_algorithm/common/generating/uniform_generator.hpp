@@ -18,7 +18,6 @@
 
 #include "base_generator.hpp"
 #include "../../../types/incomplete.hpp"
-#include "../../../utility/valarray.hpp"
 
 
 namespace genetic_algorithm {

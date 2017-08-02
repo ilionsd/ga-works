@@ -16,10 +16,14 @@
 #include <bits/stl_function.h>
 #include <algorithm>
 
+#include "../../../types/primitive.hpp"
 
-#include "../../../types/primitive_types.hpp"
 #include "../../../utility/valarray.hpp"
 #include "../../../utility/stlmath.hpp"
+
+
+#include "encoder.hpp"
+#include "decoder.hpp"
 
 
 namespace genetic_algorithm {
@@ -34,6 +38,8 @@ public:
     typedef types::unsigned_integer_t<DstT> nm_type;
     typedef std::valarray<nm_type> array_nm_type;
     typedef std::valarray<fp_type> array_fp_type;
+    typedef array_nm_type array_dst_type;
+    typedef array_fp_type array_src_type;
 
     inline constexpr numeric_coder(
             const std::size_t geneSize,
@@ -71,6 +77,13 @@ public:
     interval_sizes() const {
         return mIntervalSizes;
     };
+
+    inline constexpr auto encoder() const -> encoder<numeric_coder<fp_type, nm_type>> {
+        return (*this);
+    }
+    inline constexpr auto decoder() const -> decoder<numeric_coder<fp_type, nm_type>>{
+        return (*this);
+    }
 
     constexpr array_nm_type encode(const array_fp_type& point) const {
         using utility::valarray::convert_to;

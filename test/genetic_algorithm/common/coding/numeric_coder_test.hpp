@@ -21,6 +21,8 @@
 #include "../../../../lib/utility/stlmath.hpp"
 
 #include "../../../../lib/genetic_algorithm/common/generating/uniform_generator.hpp"
+#include "../../../../lib/genetic_algorithm/common/coding/encoder.hpp"
+#include "../../../../lib/genetic_algorithm/common/coding/decoder.hpp"
 #include "../../../../lib/genetic_algorithm/common/coding/numeric_coder.hpp"
 
 
@@ -32,9 +34,15 @@ namespace coding {
 struct numeric_coder_test {
     static constexpr auto test_cases = std::make_tuple(
             std::make_tuple(
-                    utility::array::make_of<std::size_t>(5, 5, 6, 3, 10),
-                    utility::array::make_of<double>( 0.0, 10.0,  1.0, 9.00, -1.0),
-                    utility::array::make_of<double>(20.0, 30.0, 15.0, 9.99,  1.0),
+                    ::utility::array::make_of<std::size_t>(5, 5, 6, 3, 10),
+                    ::utility::array::make_of<double>( 0.0, 10.0,  1.0, 9.00, -1.0),
+                    ::utility::array::make_of<double>(20.0, 30.0, 15.0, 9.99,  1.0),
+                    std::size_t(1000)
+            ),
+            std::make_tuple(
+                    ::utility::array::make_of<std::size_t>(5, 5, 6, 3, 10),
+                    ::utility::array::make_of<unsigned long>( 0,  0,  0, 0,    0),
+                    ::utility::array::make_of<unsigned long>(31, 31, 63, 7, 1023),
                     std::size_t(1000)
             )
     );
@@ -48,30 +56,18 @@ struct numeric_coder_test {
 
         std::size_t spaceSize = geneSizes.size();
 
-        namespace gen = ::genetic_algorithm::common::generating;
-        auto dGen = gen::make_uniform(spaceSize, leftBounds, rightBounds);
-        auto pointsRef = dGen(amount);
+        auto generator = ::genetic_algorithm::common::generating::make_uniform(spaceSize, leftBounds, rightBounds);
 
-        typedef typename decltype(pointsRef)::value_type::value_type fp_type;
-        typedef unsigned long nm_type;
-
-
-        namespace code = ::genetic_algorithm::common::coding;
-        code::numeric_coder<fp_type, nm_type> coder ( geneSizes, leftBounds, rightBounds );
-
-        auto codes = utility::vector::map([&coder](typename decltype(pointsRef)::value_type x){return coder.encode(x);}, pointsRef);
-        auto pointsDec = utility::vector::map([&coder](typename decltype(codes)::value_type x){return coder.decode(x);}, codes);
-
-        for (std::size_t k = 0; k < amount; ++k) {
-            std::valarray<bool> cmp = std::abs(pointsRef[k] - pointsDec[k]) < (coder.interval_sizes() / 2.0);
-            bool result = utility::valarray::reduce(std::logical_and<bool>{}, cmp);
-            assert(result);
-        }
+        typedef typename decltype(generator)::value_type generator_type;
+        selector<generator_type, std::remove_reference_t<decltype(geneSizes)>>{}(generator, geneSizes, amount);
     };
+
+    template<typename T1, typename T2>
+    struct selector;
 
     template<typename T, std::size_t N>
     constexpr auto convert_if_array(const std::array<T, N>& arr) const -> std::valarray<T> {
-        return utility::valarray::from(arr);
+        return ::utility::valarray::from(arr);
     }
     template<typename T>
     constexpr auto convert_if_array(const T val) const -> T {
@@ -82,6 +78,58 @@ struct numeric_coder_test {
 };  //-- struct numeric_coder_test --
 
 constexpr decltype(numeric_coder_test::test_cases) numeric_coder_test::test_cases;
+
+
+template<typename T2>
+struct numeric_coder_test::selector<double, T2> {
+    void operator() (
+        const ::genetic_algorithm::common::generating::uniform_generator<double>& generator,
+        const T2& geneSizes,
+        const std::size_t amount) const
+    {
+        typedef double        src_type;
+        typedef unsigned long dst_type;
+
+        std::vector<std::valarray<src_type>> ref = generator(amount);
+
+        namespace code = ::genetic_algorithm::common::coding;
+        code::numeric_coder<src_type, dst_type> coder ( geneSizes, generator.left_bounds(), generator.right_bounds() );
+        auto enc = ::utility::vector::map(coder.encoder(), ref);
+        auto dec = ::utility::vector::map(coder.decoder(), enc);
+
+        for (std::size_t k = 0; k < amount; ++k) {
+            std::valarray<bool> cmp = std::abs(ref[k] - dec[k]) < (coder.interval_sizes() / 2.0);
+            bool result = ::utility::valarray::reduce(std::logical_and<bool>{}, cmp);
+            assert(result);
+        }
+    }
+};
+
+template<typename T2>
+struct numeric_coder_test::selector<unsigned long, T2> {
+    void operator() (
+        const ::genetic_algorithm::common::generating::uniform_generator<unsigned long>& generator,
+        const T2& geneSizes,
+        const std::size_t amount) const
+    {
+        typedef unsigned long src_type;
+        typedef double        dst_type;
+
+        std::vector<std::valarray<src_type>> ref = generator(amount);
+
+        namespace code = ::genetic_algorithm::common::coding;
+        namespace valarr= ::utility::valarray;
+        code::numeric_coder<dst_type, src_type> coder ( geneSizes, valarr::convert_to<dst_type>(generator.left_bounds()), valarr::convert_to<dst_type>(generator.right_bounds()) );
+        std::vector<std::valarray<dst_type>> enc = ::utility::vector::map(coder.decoder(), ref);
+        std::vector<std::valarray<src_type>> dec = ::utility::vector::map(coder.encoder(), enc);
+
+        for (std::size_t k = 0; k < amount; ++k) {
+            std::valarray<bool> cmp = ref[k] == dec[k];
+            bool result = utility::valarray::reduce(std::logical_and<bool>{}, cmp);
+            assert(result);
+        }
+    }
+};
 
 };  //-- namespace coding --
 };  //-- namespace common --

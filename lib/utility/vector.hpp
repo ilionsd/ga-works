@@ -15,9 +15,10 @@ namespace utility {
 namespace vector {
 
 template<typename F, typename T>
-constexpr auto map(F f, const std::vector<T>& vec) -> std::vector<decltype(f(vec[0]))>{
-    typedef decltype(f(vec[0])) ret_type;
-    std::vector<ret_type> ret { vec.size() };
+constexpr auto map(F f, const std::vector<T>& vec) -> std::vector<decltype( f( T() ) )> {
+
+    typedef decltype( f( T() ) ) ret_type;
+    std::vector<ret_type> ret ( vec.size() );
     for (std::size_t k = 0; k < vec.size(); ++k)
         ret[k] = f( vec[k] );
     return ret;
