@@ -14,6 +14,10 @@
 #include <valarray>
 #include <algorithm>
 
+
+#include "../space.hpp"
+
+
 namespace genetic_algorithm {
 namespace common {
 namespace generating {
@@ -22,50 +26,40 @@ template<typename T>
 class base_generator {
 public:
     typedef T value_type;
-    typedef std::valarray<value_type> array_type;
+    typedef ::genetic_algorithm::common::space<value_type> space_type;
+    typedef typename space_type::vector_type vector_type;
 
-    inline constexpr base_generator(const std::size_t spaceSize, const value_type leftBound, const value_type rightBound) :
-            mGenerator (),
-            mSpaceSize ( spaceSize ),
-            mLeftBounds  ( leftBound , spaceSize ),
-            mRightBounds ( rightBound, spaceSize )
-    {};
-    inline constexpr base_generator(const std::size_t spaceSize, const array_type& leftBounds, const array_type& rightBounds) :
-            mGenerator (),
-            mSpaceSize ( spaceSize ),
-            mLeftBounds  ( leftBounds  ),
-            mRightBounds ( rightBounds )
-    {
-        assert(mSpaceSize == mLeftBounds .size());
-        assert(mSpaceSize == mRightBounds.size());
-    };
+    inline constexpr base_generator(
+            const space_type& space) :
+        mGenerator ( std::mt19937_64( std::random_device()() ) ),
+        mSpace ( space )
+    {}
+    inline constexpr base_generator(
+            const space_type& space,
+            std::mt19937_64& generator) :
+        mGenerator ( generator ),
+        mSpace ( space )
+    {}
 
-    inline constexpr std::mt19937_64& generator() const {
+    inline constexpr std::mt19937_64&
+    generator() const {
         return mGenerator;
-    };
+    }
 
-    inline constexpr std::size_t space_size() const {
-        return mSpaceSize;
-    };
-
-    inline constexpr const array_type& left_bounds() const {
-        return mLeftBounds;
-    };
-    inline constexpr const array_type& right_bounds() const {
-        return mRightBounds;
-    };
-
+    inline constexpr const space_type&
+    space() const {
+        return mSpace;
+    }
 
 private:
     mutable std::mt19937_64 mGenerator;
-    std::size_t mSpaceSize;
-    array_type mLeftBounds, mRightBounds;
+    const space_type& mSpace;
 
 };
 
-};  //-- namespace generating --
-};  //-- namespace common --
-};  //-- namespace genetic_algorithm --
+}   //-- namespace generating --
+}   //-- namespace common --
+}   //-- namespace genetic_algorithm --
 
 
 #endif /* LIB_GENETIC_ALGORITHM_COMMON_GENERATING_BASE_GENERATOR_HPP_ */

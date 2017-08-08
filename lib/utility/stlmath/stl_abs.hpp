@@ -5,8 +5,8 @@
  *      Author: ilion
  */
 
-#ifndef LIB_UTILITY_STLMATH_STLABS_HPP_
-#define LIB_UTILITY_STLMATH_STLABS_HPP_
+#ifndef LIB_UTILITY_STLMATH_STL_ABS_HPP_
+#define LIB_UTILITY_STLMATH_STL_ABS_HPP_
 
 #include <cmath>
 #include <cstdlib>
@@ -36,4 +36,4 @@ UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( abs , unsigned long long , x )
 }   //-- namespace utility --
 
 
-#endif /* LIB_UTILITY_STLMATH_STLABS_HPP_ */
+#endif /* LIB_UTILITY_STLMATH_STL_ABS_HPP_ */

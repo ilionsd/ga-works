@@ -5,8 +5,8 @@
  *      Author: ilion
  */
 
-#ifndef LIB_UTILITY_STLMATH_STLCEIL_HPP_
-#define LIB_UTILITY_STLMATH_STLCEIL_HPP_
+#ifndef LIB_UTILITY_STLMATH_STL_CEIL_HPP_
+#define LIB_UTILITY_STLMATH_STL_CEIL_HPP_
 
 
 #include <cmath>
@@ -39,4 +39,4 @@ UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , unsigned long long , x )
 }   //-- namespace utility --
 
 
-#endif /* LIB_UTILITY_STLMATH_STLCEIL_HPP_ */
+#endif /* LIB_UTILITY_STLMATH_STL_CEIL_HPP_ */

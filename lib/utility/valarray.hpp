@@ -17,11 +17,15 @@
 #include <type_traits>
 
 
+
 #include "stlmath.hpp"
 
 
 namespace utility {
 namespace valarray {
+
+template<class T1, typename T2>
+using expr_type = std::_Expr<T1, T2>;
 
 template<typename... Ts>
 constexpr auto make(const Ts... args) -> std::valarray<std::common_type_t<Ts...>> {
@@ -39,6 +43,10 @@ constexpr auto from(const std::array<T, N>& arr) -> std::valarray<T> {
     for (std::size_t k = 0; k < N; ++k)
         valarr[k] = arr[k];
     return valarr;
+}
+template<typename T>
+constexpr auto from(const std::vector<T>& vec) -> std::valarray<T> {
+    return std::valarray<T>(vec.data(), vec.size());
 }
 
 
@@ -61,18 +69,35 @@ constexpr auto map(F f, const Expr& expr) {
     return ret;
 }
 
+template<typename T>
+constexpr auto cumulative_sum(const std::valarray<T>& array) -> std::valarray<T> {
+    register T acc = 0;
+    std::valarray<T> cumulativeSum (array.size());
+    for (std::size_t k = 0; k < array.size(); ++k)
+        cumulativeSum[k] = acc += array[k];
+    return cumulativeSum;
+}
+template<class Clos, typename T>
+constexpr auto cumulative_sum(const expr_type<Clos, T>& expr) -> std::valarray<T> {
+    register T acc = 0;
+    std::valarray<T> cumulativeSum (expr.size());
+    for (std::size_t k = 0; k < expr.size(); ++k)
+        cumulativeSum[k] = acc += expr[k];
+    return cumulativeSum;
+}
 
-template<typename F, typename Expr>
-constexpr auto reduce(F f, const Expr& expr) {
-    typedef typename Expr::value_type value_type;
-    value_type acc = expr[0];
+
+template<typename F, class Closure, typename T>
+constexpr auto reduce(F f, const expr_type<Closure, T>& expr) -> T {
+    typedef T value_type;
+    register value_type acc = expr[0];
     for (std::size_t k = 1; k < expr.size(); ++k)
         acc = f(acc, expr[k]);
     return acc;
 }
 template< typename F, typename T>
 constexpr auto reduce(F f, const std::valarray<T>& array) -> T {
-    T acc = array[0];
+    register T acc = array[0];
     for (std::size_t k = 1; k < array.size(); ++k)
         acc = f(acc, array[k]);
     return acc;
@@ -105,6 +130,10 @@ constexpr auto convert_to(const std::valarray<T2>& array) -> std::valarray<T1> {
     for (std::size_t k = 0; k < array.size(); ++k)
         ret[k] = T1 ( array[k] );
     return ret;
+}
+template<typename Set, typename T>
+constexpr auto convert_to_set(const std::valarray<T>& array) -> Set {
+    return Set(std::begin(array), std::end(array));
 }
 
 

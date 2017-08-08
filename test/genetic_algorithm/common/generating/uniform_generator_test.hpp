@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "../../../../lib/genetic_algorithm/common/generating/uniform_generator.hpp"
+#include "../../../../lib/genetic_algorithm/common/space.hpp"
 #include "../../../../lib/utility/tuple.hpp"
 #include "../../../../lib/utility/array.hpp"
 
@@ -28,15 +29,11 @@ namespace generating {
 struct uniform_generator_test {
 
     static constexpr auto test_cases = std::make_tuple(
-            std::make_tuple(3, 0, 100, 1000),
             std::make_tuple(
-                    3,
                     utility::array::make_of<std::size_t>( 0, 10,  70),
                     utility::array::make_of<std::size_t>(10, 50, 100),
                     1000),
-            std::make_tuple(3, -10.0, 100.0, 1000),
             std::make_tuple(
-                    3,
                     utility::array::make_of<double>( 0,  -10, -100),
                     utility::array::make_of<double>(10.0, 50,  100),
                     1000)
@@ -44,17 +41,19 @@ struct uniform_generator_test {
 
     template<typename... Ts>
     void operator() (const std::tuple<Ts...>& testCase) const {
-        auto spaceSize   = std::get<0>(testCase);
-        auto leftBounds  = convert_if_array(std::get<1>(testCase));
-        auto rightBounds = convert_if_array(std::get<2>(testCase));
-        auto amount      = std::get<3>(testCase);
+        auto leftBounds  = convert_if_array(std::get<0>(testCase));
+        auto rightBounds = convert_if_array(std::get<1>(testCase));
+        auto amount      = std::get<2>(testCase);
+
+        auto space = ::genetic_algorithm::common::make_space(leftBounds, rightBounds);
+        typedef typename decltype(space)::value_type value_type;
 
         namespace gen = ::genetic_algorithm::common::generating;
-        auto generator = gen::make_uniform(spaceSize, leftBounds, rightBounds);
+        auto generator = gen::uniform_generator<value_type>(space);
         auto codes = generator(amount);
 
         for (std::size_t k = 0; k < codes.size(); ++k) {
-            std::valarray<bool> cmp = (generator.left_bounds() <= codes[k]) && (codes[k] <= generator.right_bounds());
+            std::valarray<bool> cmp = (generator.space().left_bounds() <= codes[k]) && (codes[k] <= generator.space().right_bounds());
             bool result = utility::valarray::reduce(std::logical_and<bool>{}, cmp);
             assert(result);
         }

@@ -5,8 +5,8 @@
  *      Author: ilion
  */
 
-#ifndef LIB_UTILITY_STLMATH_STLFLOOR_HPP_
-#define LIB_UTILITY_STLMATH_STLFLOOR_HPP_
+#ifndef LIB_UTILITY_STLMATH_STL_FLOOR_HPP_
+#define LIB_UTILITY_STLMATH_STL_FLOOR_HPP_
 
 
 #include <cmath>
@@ -38,4 +38,4 @@ UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( floor , unsigned long long , x )
 }   //-- namespace stlmath --
 }   //-- namespace utility --
 
-#endif /* LIB_UTILITY_STLMATH_STLFLOOR_HPP_ */
+#endif /* LIB_UTILITY_STLMATH_STL_FLOOR_HPP_ */

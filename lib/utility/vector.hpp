@@ -10,9 +10,26 @@
 
 #include <cstddef>
 #include <vector>
+#include <type_traits>
 
 namespace utility {
 namespace vector {
+
+template<typename... Ts>
+inline constexpr auto make(const Ts... args) -> std::vector<std::common_type_t<Ts...>> {
+    return { args... };
+}
+template<typename T, typename... Ts>
+inline constexpr auto make_of(const Ts... args) -> std::vector<T> {
+    return { T(args)... };
+}
+inline auto make_arange(const std::size_t n) -> std::vector<std::size_t> {
+    std::vector<std::size_t> vec ( n + 1 );
+    for (std::size_t k = 0; k <= n; ++k)
+        vec[k] = k;
+    return vec;
+}
+
 
 template<typename F, typename T>
 constexpr auto map(F f, const std::vector<T>& vec) -> std::vector<decltype( f( T() ) )> {
