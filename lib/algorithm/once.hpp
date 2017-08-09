@@ -14,33 +14,35 @@
 
 namespace algorithm {
 
-class base_once {
+template<bool UseAfteRoll = true>
+class once {
 public:
     typedef std::vector<bool> used_type;
     typedef used_type::size_type size_type;
+    static constexpr bool use_after_roll = UseAfteRoll;
 
-    inline constexpr base_once() :
-            mGen (std::random_device()()),
+    inline once() :
+            mEngine ( std::random_device()() ),
             mDist (),
             mUsedNumber (),
             mUsed ()
     {}
-    inline constexpr base_once(const size_type size) :
-            mGen (std::random_device()()),
+    inline once(const size_type size) :
+            mEngine ( std::random_device()() ),
             mDist (0, size - 1),
             mUsedNumber (),
             mUsed (size, false)
     {}
-    inline constexpr size_type size() const {
+    inline size_type size() const {
         return mUsed.size();
     }
-    inline constexpr size_type used_number() const {
+    inline size_type used_number() const {
         return mUsedNumber;
     }
-    inline constexpr bool all_used() const {
+    inline bool all_used() const {
         return mUsedNumber == size();
     }
-    inline constexpr operator bool() const {
+    inline operator bool() const {
         return !all_used();
     }
     void reset(const size_type size) {
@@ -51,89 +53,46 @@ public:
         mUsedNumber = 0;
         mUsed.assign(size(), false);
     }
-    inline constexpr void use(const size_type index) const {
+    inline void use(const size_type index) const {
         mUsedNumber += !mUsed[index];
         mUsed[index] = true;
     }
-    inline constexpr void unuse(const size_type index) const {
+    inline void unuse(const size_type index) const {
         mUsedNumber -= mUsed[index];
         mUsed[index] = false;
     }
+    inline once<use_after_roll>& operator= (const size_type size) {
+        reset(size);
+        return (*this);
+    }
+    inline size_type operator() () const {
+        size_type index = roll();
+        return index;
+    }
 
 protected:
-    inline constexpr size_type roll() const {
+    inline size_type roll() const {
         size_type index;
         if (used_number() == size())
             refresh();
         do {
-            index = mDist(mGen);
+            index = mDist(mEngine);
         }
         while (mUsed[index]);
-        use(index);
+        if (use_after_roll) use(index);
         return index;
     }
 
 private:
-    mutable std::mt19937_64 mGen;
-    mutable std::uniform_int_distribution mDist;
+    mutable std::mt19937_64 mEngine;
+    mutable std::uniform_int_distribution<size_type> mDist;
     mutable size_type mUsedNumber;
     mutable std::vector<bool> mUsed;
 };
 
-template<typename T = void>
-class once : public base_once {
-public:
-    typedef base_once base_type;
-    typedef base_type::size_type size_type;
-    typedef T container_type;
-    typedef typename container_type::value_type value_type;
-
-    inline constexpr once() noexcept :
-            base_type(),
-            mValues()
-    {}
-    inline constexpr once(const container_type& values) noexcept :
-            base_type(values.size()),
-            mValues (values)
-    {}
-    inline once<container_type>& operator= (const container_type& values) {
-        reset(values.size());
-        return (*this);
-    }
-    inline constexpr value_type operator() () const {
-        size_type index = roll();
-        return mValues[index];
-    }
-
-private:
-    container_type mValues;
-};
-
-template<>
-class once<void> : public base_once {
-public:
-    typedef base_once base_type;
-    typedef base_type::size_type size_type;
-
-    inline constexpr once() noexcept :
-            base_type()
-    {}
-    inline constexpr once(const size_type size) noexcept :
-            base_type(size)
-    {}
-    inline once<void>& operator= (const size_type size) {
-        reset(size);
-        return (*this);
-    }
-    inline constexpr size_type operator() () const {
-        size_type index = roll();
-        return index;
-    }
-};
-
-template<typename T>
-inline once<T> make_once(const T& values) {
-    return once<T>(values);
+template<bool UseAfterRoll = true>
+inline once<UseAfterRoll> make_once(const std::size_t size) {
+    return once<UseAfterRoll>(size);
 }
 
 }   //-- namespace algorithm --

@@ -14,6 +14,21 @@
 #include <utility>
 #include <tuple>
 
+#include "../lib/genetic_algorithm/common/generating/uniform_generator.hpp"
+#include "../lib/genetic_algorithm/common/coding/numeric_coder.hpp"
+
+#include "genetic_algorithm/common/generating/uniform_generator_test.hpp"
+#include "genetic_algorithm/common/coding/numeric_coder_test.hpp"
+#include "genetic_algorithm/common/coding/gray_coder_test.hpp"
+
+
+#define TEST_CLASS_NAME(CLASS_NAME) ::test CLASS_NAME ## _test
+
+#define TEST_RUN_ALL(CLASS_NAME) \
+    std::cout << #CLASS_NAME << " test... " << std::endl; \
+    ::test::run_all<TEST_CLASS_NAME(CLASS_NAME)>(TEST_CLASS_NAME(CLASS_NAME)::test_cases); \
+    std::cout << "OK" << std::endl;
+
 
 namespace test {
 
@@ -35,16 +50,26 @@ inline constexpr void run_all(const std::tuple<Ts...>& testCases) {
     run_test<TestT>(testCases, std::index_sequence_for<Ts...>{});
 };
 
+void testing() {
+    using std::cout;
+    using std::endl;
 
-};  //-- namespace test --
+#ifndef NDEBUG
+
+    cout << "Debug build" << endl;
+
+    TEST_RUN_ALL( ::genetic_algorithm::common::generating::uniform_generator )
+    TEST_RUN_ALL( ::genetic_algorithm::common::coding::numeric_coder )
+    TEST_RUN_ALL( ::genetic_algorithm::common::coding::gray_coder )
+
+#endif
+}
 
 
-#define TEST_CLASS_NAME(CLASS_NAME) ::test CLASS_NAME ## _test
+}   //-- namespace test --
 
-#define TEST_RUN_ALL(CLASS_NAME) \
-    std::cout << #CLASS_NAME << " test... " << std::endl; \
-    ::test::run_all<TEST_CLASS_NAME(CLASS_NAME)>(TEST_CLASS_NAME(CLASS_NAME)::test_cases); \
-    std::cout << "OK" << std::endl;
+
+
 
 
 #endif /* TEST_TEST_HPP_ */

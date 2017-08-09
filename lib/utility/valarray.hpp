@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <valarray>
 #include <array>
+#include <vector>
 #include <tuple>
 #include <algorithm>
 #include <type_traits>
@@ -36,6 +37,11 @@ template<typename T, typename... Ts>
 constexpr auto make_of(const Ts... args) -> std::valarray<T> {
     return { args... };
 };
+
+template<typename T>
+constexpr auto repeat(const std::size_t size, const T val = T()) -> std::valarray<T> {
+    return std::valarray<T>(val, size);
+}
 
 template<typename T, std::size_t N>
 constexpr auto from(const std::array<T, N>& arr) -> std::valarray<T> {

@@ -8,44 +8,46 @@
 #ifndef LIB_ALGORITHM_MINMAX_HPP_
 #define LIB_ALGORITHM_MINMAX_HPP_
 
+
+#include <cstddef>
 #include <algorithm>
 #include <iterator>
+
 
 namespace algorithm {
 
 template<typename T>
 struct min {
-    typedef T container_type;
-    typedef typename container_type::size_type size_type;
-    typedef typename container_type::value_type value_type;
+    typedef T value_type;
+    typedef std::size_t size_type;
 
-    inline constexpr size_type operator() (const container_type& array) const {
-        return std::distance(std::begin(array), std::min_element(std::begin(array), std::end(array)));
+    template<typename V>
+    inline constexpr size_type operator() (const V& vec) const {
+        auto b = std::begin(vec), e = std::end(vec);
+        return std::distance(b, std::min_element(b, e));
     }
 };
 template<typename T>
 struct max {
-    typedef T container_type;
-    typedef typename container_type::size_type size_type;
-    typedef typename container_type::value_type value_type;
+    typedef T value_type;
+    typedef std::size_t size_type;
 
-    inline constexpr size_type operator() (const container_type& array) const {
-        return std::distance(std::begin(array), std::max_element(std::begin(array), std::end(array)));
+    template<typename V>
+    inline constexpr size_type operator() (const V& vec) const {
+        auto b = std::begin(vec), e = std::end(vec);
+        return std::distance(b, std::max_element(b, e));
     }
 };
 template<typename T>
 struct minmax {
-    typedef T container_type;
-    typedef typename container_type::size_type size_type;
-    typedef typename container_type::value_type value_type;
+    typedef T value_type;
+    typedef std::size_t size_type;
 
-    struct result {
-        value_type minIndex, maxIndex;
-    };
-
-    inline constexpr result operator() (const container_type& array) const {
-        auto minmax = std::distance(std::begin(array), std::minmax_element(std::begin(array), std::end(array)));
-        return (minmax.first, minmax.second);
+    template<typename V>
+    inline constexpr std::pair<size_type, size_type> operator() (const V& vec) const {
+        auto b = std::begin(vec), e = std::end(vec);
+        auto minmax = std::minmax_element(b, e);
+        return std::make_pair(std::distance(b, minmax.first), std::distance(b, minmax.second));
     }
 };
 

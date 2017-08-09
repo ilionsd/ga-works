@@ -35,6 +35,7 @@ constexpr std::string to_string(const std::valarray<T>& array) {
 template<typename T>
 constexpr std::ostream& operator<< (std::ostream& out, const std::valarray<T>& valarr) {
     out << to_string(valarr);
+    return out;
 }
 
 }   //-- namespace utility --

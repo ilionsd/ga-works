@@ -64,7 +64,7 @@ struct numeric_coder_test {
         ::genetic_algorithm::common::generating::uniform_generator<src_type> generator (srcSpace);
         ::genetic_algorithm::common::coding::numeric_coder<src_type, dst_type> coder (srcSpace, dstSpace);
         std::vector<std::valarray<src_type>> ref = generator(amount);
-        std::vector<std::valarray<src_type>> dec = selector<src_type, dst_type>{}(coder, ref);
+        selector<src_type, dst_type>{}(coder, ref);
     };
 
     template<typename T1, typename T2>
@@ -87,9 +87,9 @@ constexpr decltype(numeric_coder_test::test_cases) numeric_coder_test::test_case
 
 template<>
 struct numeric_coder_test::selector<double, unsigned long> {
-    auto operator() (
+    void operator() (
         const ::genetic_algorithm::common::coding::numeric_coder<double, unsigned long>& coder,
-        const std::vector<std::valarray<double>>& ref) const -> std::vector<std::valarray<double>>
+        const std::vector<std::valarray<double>>& ref) const
     {
         auto enc = ::utility::vector::map(coder.uint_coder(), ref);
         auto dec = ::utility::vector::map(coder.real_coder(), enc);
@@ -99,27 +99,23 @@ struct numeric_coder_test::selector<double, unsigned long> {
             bool result = ::utility::valarray::reduce(std::logical_and<bool>{}, cmp);
             assert(result);
         }
-
-        return dec;
     }
 };
 
 template<>
 struct numeric_coder_test::selector<unsigned long, double> {
-    auto operator() (
+    void operator() (
         const ::genetic_algorithm::common::coding::numeric_coder<unsigned long, double>& coder,
-        const std::vector<std::valarray<unsigned long>>& ref) const -> std::vector<std::valarray<unsigned long>>
+        const std::vector<std::valarray<unsigned long>>& ref) const
     {
-        auto enc = ::utility::vector::map(coder.real_coder(), ref);
-        auto dec = ::utility::vector::map(coder.uint_coder(), enc);
+        std::vector<std::valarray<double>>        enc = ::utility::vector::map(coder.real_coder(), ref);
+        std::vector<std::valarray<unsigned long>> dec = ::utility::vector::map(coder.uint_coder(), enc);
 
         for (std::size_t k = 0; k < ref.size(); ++k) {
             std::valarray<bool> cmp = ref[k] == dec[k];
             bool result = ::utility::valarray::reduce(std::logical_and<bool>{}, cmp);
             assert(result);
         }
-
-        return dec;
     }
 };
 
