@@ -17,6 +17,11 @@
 #include "stlmath/stl_log.hpp"
 #include "stlmath/stl_log2.hpp"
 #include "stlmath/stl_round.hpp"
+#include "stlmath/stl_sin.hpp"
+#include "stlmath/stl_cos.hpp"
+#include "stlmath/stl_power.hpp"
+#include "stlmath/stl_exp.hpp"
+#include "stlmath/stl_sqrt.hpp"
 
 
 namespace utility {
@@ -31,6 +36,11 @@ template<typename T> struct ln;
 template<typename T> struct lg;
 template<typename T> struct log;
 template<typename T> struct log2;
+template<typename T> struct sin;
+template<typename T> struct cos;
+template<typename T> struct power;
+template<typename T> struct exp;
+template<typename T> struct sqrt;
 
 
 }   //-- namespace stlmath --

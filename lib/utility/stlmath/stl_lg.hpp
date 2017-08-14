@@ -21,9 +21,9 @@ namespace stlmath {
 template<typename T>
 struct lg;
 
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( lg , float ,       std::log10(x) )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( lg , double ,      std::log10(x) )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( lg , long double , std::log10(x) )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( lg , float ,       std::log10(arg0) )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( lg , double ,      std::log10(arg0) )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( lg , long double , std::log10(arg0) )
 
 }   //-- namespace stlmath --
 }   //-- namespace utility --

@@ -23,17 +23,17 @@ namespace stlmath {
 template<typename T>
 struct ceil;
 
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , float ,       std::ceil(x) )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , double ,      std::ceil(x) )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , long double , std::ceil(x) )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , float ,       std::ceil(arg0) )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , double ,      std::ceil(arg0) )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , long double , std::ceil(arg0) )
 
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , signed int ,       x )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , signed long ,      x )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , signed long long , x )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , signed int ,       arg0 )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , signed long ,      arg0 )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , signed long long , arg0 )
 
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , unsigned int ,       x )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , unsigned long ,      x )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , unsigned long long , x )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , unsigned int ,       arg0 )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , unsigned long ,      arg0 )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( ceil , unsigned long long , arg0 )
 
 }   //-- namespace stlmath --
 }   //-- namespace utility --

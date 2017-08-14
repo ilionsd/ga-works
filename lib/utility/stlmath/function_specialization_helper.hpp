@@ -12,7 +12,7 @@
 #define UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( NAME , TYPE , REALISATION ) \
 template<>                                                    \
 struct NAME<TYPE> : std::unary_function<TYPE, TYPE> {         \
-    inline constexpr TYPE operator() (const TYPE x) const {   \
+    inline constexpr TYPE operator() (const TYPE arg0) const {   \
         return REALISATION ;                                  \
     }                                                         \
 };
@@ -21,7 +21,7 @@ struct NAME<TYPE> : std::unary_function<TYPE, TYPE> {         \
 #define UTILITY_STLMATH_FUNC_BINARY_TEMPLATE_SPEC( NAME , TYPE , REALISATION ) \
 template<>                                                    \
 struct NAME<TYPE> : std::binary_function<TYPE, TYPE, TYPE> {         \
-    inline constexpr TYPE operator() (const TYPE a, const TYPE b) const {   \
+    inline constexpr TYPE operator() (const TYPE arg0, const TYPE arg1) const {   \
         return REALISATION ;                                  \
     }                                                         \
 };

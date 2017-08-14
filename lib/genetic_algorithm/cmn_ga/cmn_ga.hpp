@@ -20,6 +20,7 @@
 #include "../../../lib/utility/stlmath.hpp"
 #include "../../../lib/utility/valarray.hpp"
 #include "../../../lib/utility/vector.hpp"
+#include "../../../lib/utility/math/euclidean_distance.hpp"
 #include "../../../lib/algorithm/quick_select.hpp"
 #include "../../../lib/algorithm/binary_search.hpp"
 #include "../../../lib/algorithm/minmax.hpp"
@@ -33,11 +34,36 @@
 namespace genetic_algorithm {
 namespace cmn_ga {
 
+namespace detail {
+
+template<typename T, typename F, std::size_t... I>
+inline auto vactorize_impl(F f, std::index_sequence<sizeof...(I)>) -> std::function<T(std::valarray<T>)> {
+    return [f](const std::valarray<T>& x) -> T { return f(x[I]...); };
+}
+
+}
+
+template<typename T, std::size_t N, typename F>
+inline auto vectorize(F f) -> std::function<T(std::valarray<T>)> {
+    return detail::vactorize_impl(f, std::make_index_sequence<N>());
+}
+
+template<typename T>
+struct threshold {
+    typedef T value_type;
+
+    inline constexpr threshold(const value_type thresholdMultiplier) :
+            threshold_multiplier(thresholdMultiplier)
+    {}
+
+    inline constexpr value_type operator() (const value_type val) const {
+        return 0.08 * (1.001 - val * (1.0 - 0.5 * threshold_multiplier));
+    }
+    value_type threshold_multiplier;
+};
+
 struct cmn_ga {
-    typedef unsigned long uint_type;
     typedef double        real_type;
-    typedef std::vector<bool>      gcode_type;
-    typedef std::valarray<uint_type> icode_type;
     typedef std::valarray<real_type> point_type;
     typedef std::size_t size_type;
     typedef std::valarray<size_type> indices_type;
@@ -45,6 +71,8 @@ struct cmn_ga {
 
     static constexpr real_type exponential_scaling_function_median_value = 0.5;
     static constexpr real_type local_convergence_criteria = 1e+10;
+
+    static const std::function<real_type(point_type, point_type)> default_proximity;
 
     struct parameters {
         std::size_t
@@ -60,78 +88,86 @@ struct cmn_ga {
 
     const parameters params;
 
-    ::genetic_algorithm::common::coding::numeric_coder<real_type, uint_type> ncoder;
-
     std::valarray<real_type> fitness;
     real_type min_fitness, max_fitness;
     std::vector<point_type> points;
-    std::vector<icode_type> icodes;
     std::vector<std::vector<real_type>> proximity_matrix;
 
+    std::size_t generation_number;
     std::size_t population_size;
 
-    std::function<real_type(const real_type fitness)> threshold;
-    std::function<real_type(const point_type, const point_type)> distance;
-    std::function<real_type(const point_type)> fitness_function;
+    std::function<real_type(const real_type fitness)> threshold_f;
+    std::function<real_type(const point_type, const point_type)> proximity_f;
+    std::function<real_type(const point_type)> fitness_f;
     ::genetic_algorithm::common::real_space<real_type> real_space;
-    ::genetic_algorithm::common::uint_space<uint_type> uint_space;
 
     mutable std::mt19937_64 engine;
 
     cmn_ga(
             const parameters& params,
             ::genetic_algorithm::common::real_space<real_type>& realSpace,
-            ::genetic_algorithm::common::uint_space<uint_type>& uintSpace,
              std::function<real_type(const point_type)> fitnessFunction) :
                 params (params),
                 real_space (realSpace),
-                uint_space (uintSpace),
-                ncoder (realSpace, uintSpace),
-                fitness_function (fitnessFunction),
+                fitness_f (fitnessFunction),
                 population_size (),
+                generation_number (),
                 fitness (),
                 min_fitness (),
                 max_fitness (),
                 points (),
-                icodes (),
-                proximity_matrix ()
+                proximity_matrix (),
+                proximity_f(default_proximity)
     {}
 
     void init() {
-        ncoder = ::genetic_algorithm::common::coding::numeric_coder<real_type, uint_type>(real_space, uint_space);
+        generation_number = 0;
 
         namespace g = ::genetic_algorithm::common::generating;
-        g::uniform_generator<uint_type> gen = g::uniform_generator<uint_type>(uint_space, engine);
-        std::vector<icode_type> initialICodes = gen(params.initial_population_size);
+        g::uniform_generator<real_type> gen = g::uniform_generator<real_type>(real_space, engine);
+        std::vector<point_type> initialPoints = gen(params.initial_population_size);
 
         min_fitness = std::numeric_limits<real_type>::max();
         max_fitness = std::numeric_limits<real_type>::lowest();
 
+        points.resize(params.max_population_size);
+        fitness.resize(params.max_population_size);
         for (population_size = 0; population_size < params.initial_population_size; ++population_size) {
-            icodes[population_size] = std::move(initialICodes[population_size]);
-            points[population_size] = ncoder.to_real(icodes[population_size]);
-            fitness[population_size] = fitness_function(points[population_size]);
+            points[population_size] = std::move(initialPoints[population_size]);
+            fitness[population_size] = fitness_f(points[population_size]);
             if (min_fitness > fitness[population_size])
                 min_fitness = fitness[population_size];
             if (max_fitness < fitness[population_size])
                 max_fitness = fitness[population_size];
         }
 
+        proximity_matrix.resize(params.max_population_size);
         for (size_type i = 0; i < population_size; ++i) {
+            proximity_matrix[i].resize(i + 1);
             for (size_type j = 0; j <= i; ++j) {
-                proximity_matrix[i][j] = 1.0 / distance(points[i], points[j]);
+                proximity_matrix[i][j] = proximity_f(points[i], points[j]);
             }
         }
     }
 
     auto operator() () -> std::vector<point_type> {
+        using std::cout;
+        using std::endl;
+
         indices_type localOptimas;
+        real_type thresholdMultiplier = 1.0;
         while ( true ) {
+            cout << "Generation: " << generation_number << endl;
+            cout << "Population size: " << population_size << endl;
+
             localOptimas = local_optimas();
             std::valarray<real_type> scaledFitness = scale_fitness(localOptimas);
             if (max_population_reached() || local_convergence(localOptimas).min())
                 break;
+            threshold_f = threshold<real_type>(thresholdMultiplier);
             next_generation(scaledFitness);
+            ++generation_number;
+            thresholdMultiplier *= 0.9;
         }
         std::vector<point_type> optimaPoints (localOptimas.size());
         for (size_type optimaIndex = 0; optimaIndex < localOptimas.size(); ++optimaIndex)
@@ -160,9 +196,9 @@ struct cmn_ga {
         algorithm::once<false> pairIndexOnce(params.crossover_pair_number);
         while (tryNumber < params.max_try_number && pairIndexOnce) {
             pairIndex = pairIndexOnce();
-            icode_type derivedICode = crossover(p1[pairIndex], p2[pairIndex]);
-            if (!addition(derivedICode, scaledFitness, population_size + pairIndexOnce.used_number()))
-                pairIndexOnce.unuse(pairIndex);
+            point_type derivedPoint = crossover(p1[pairIndex], p2[pairIndex]);
+            if (addition(derivedPoint, scaledFitness, population_size + pairIndexOnce.used_number()))
+                pairIndexOnce.use(pairIndex);
             ++tryNumber;
         }
 
@@ -172,8 +208,8 @@ struct cmn_ga {
         size_type mutationNumber = 0;
         while (tryNumber < params.max_try_number && mutationNumber < params.mutated_individuals_number) {
             size_type mutationIndex = dist(engine);
-            icode_type mutantICode = mutation(mutationIndex);
-            if ( uint_space.is_in(mutantICode) &&
+            point_type mutantICode = mutation(mutationIndex);
+            if ( real_space.is_in(mutantICode) &&
                     addition(mutantICode, scaledFitness, population_size + pairIndexOnce.used_number() + mutationNumber))
                 ++mutationNumber;
             ++tryNumber;
@@ -181,44 +217,42 @@ struct cmn_ga {
         population_size = population_size + pairIndexOnce.used_number() + mutationNumber;
     }
 
-    auto addition(const icode_type& icode, const std::valarray<real_type>& scaledFitness, const size_type index) -> bool {
-        point_type point = ncoder.to_real(icode);
+    auto addition(const point_type& point, const std::valarray<real_type>& scaledFitness, const size_type index) -> bool {
         std::vector<real_type> proximitiesVector (population_size);
         real_type nearestIndex = 0;
         for (size_type k = 0; k < population_size; ++k) {
-            proximitiesVector[k] = 1.0 / distance(point, points[k]);
+            proximitiesVector[k] = proximity_f(point, points[k]);
             if (proximitiesVector[nearestIndex] < proximitiesVector[k])
                 nearestIndex = k;
         }
-        register real_type thresholdRMin = threshold(scaledFitness[nearestIndex]);
+        register real_type thresholdRMin = threshold_f(scaledFitness[nearestIndex]);
         bool success = true;
         if (thresholdRMin < proximitiesVector[nearestIndex])
             success = false;
         else {
-            fitness[index] = fitness_function(point);
-            icodes [index] = std::move(icode);
+            fitness[index] = fitness_f(point);
             points [index] = std::move(point);
             proximity_matrix[index] = std::move(proximitiesVector);
         }
         return success;
     }
 
-    auto mutation(const size_type index) const -> icode_type {
-        icode_type mutant (uint_space.size());
-        for (size_type dim = 0; dim < uint_space.size(); ++dim) {
-            double mean = icodes[index][dim];
-            double stddev = uint_space.right_bounds()[dim] / (2.0 * 3.0);
-            mutant[dim] = uint_type(utility::stlmath::round<real_type>()(std::normal_distribution<real_type>( mean, stddev )(engine)));
+    auto mutation(const size_type index) const -> point_type {
+        point_type mutant (real_space.size());
+        for (size_type dim = 0; dim < real_space.size(); ++dim) {
+            double mean = points[index][dim];
+            double stddev = real_space.right_bounds()[dim] / (2.0 * 3.0);
+            mutant[dim] = std::normal_distribution<real_type>( mean, stddev )(engine);
         }
         return mutant;
     }
 
-    auto crossover(const size_type p1, const size_type p2) const -> icode_type {
-        icode_type derived (uint_space.size());
-        for (size_type dim = 0; dim < uint_space.size(); ++dim) {
-            uint_type a, b;
-            std::tie(a, b) = std::minmax(icodes[p1][dim], icodes[p2][dim]);
-            derived[dim] = std::uniform_int_distribution<uint_type>(a, b)(engine);
+    auto crossover(const size_type p1, const size_type p2) const -> point_type {
+        point_type derived (real_space.size());
+        real_type a, b;
+        for (size_type dim = 0; dim < real_space.size(); ++dim) {
+            std::tie(a, b) = std::minmax(points[p1][dim], points[p2][dim]);
+            derived[dim] = std::uniform_real_distribution<real_type>(a, b)(engine);
         }
         return derived;
     }
@@ -321,6 +355,11 @@ struct cmn_ga {
             std::swap(i, j);
         return proximity_matrix[i][j];
     }
+};
+
+decltype(cmn_ga::default_proximity) cmn_ga::default_proximity = [] (cmn_ga::point_type x, cmn_ga::point_type y)
+        -> double {
+    return 1.0 / ::utility::math::euclidean_distance<cmn_ga::real_type>()(x, y);
 };
 
 }   //-- namespace cmn_ga --

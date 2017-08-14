@@ -21,9 +21,9 @@ namespace stlmath {
 template<typename T>
 struct log;
 
-UTILITY_STLMATH_FUNC_BINARY_TEMPLATE_SPEC( log , float ,       std::log(b) / std::log(a) )
-UTILITY_STLMATH_FUNC_BINARY_TEMPLATE_SPEC( log , double ,      std::log(b) / std::log(a) )
-UTILITY_STLMATH_FUNC_BINARY_TEMPLATE_SPEC( log , long double , std::log(b) / std::log(a) )
+UTILITY_STLMATH_FUNC_BINARY_TEMPLATE_SPEC( log , float ,       std::log(arg1) / std::log(arg0) )
+UTILITY_STLMATH_FUNC_BINARY_TEMPLATE_SPEC( log , double ,      std::log(arg1) / std::log(arg0) )
+UTILITY_STLMATH_FUNC_BINARY_TEMPLATE_SPEC( log , long double , std::log(arg1) / std::log(arg0) )
 
 }   //-- namespace stlmath --
 }   //-- namespace utility --

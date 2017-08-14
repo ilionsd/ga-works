@@ -22,17 +22,17 @@ namespace stlmath {
 template<typename T>
 struct round;
 
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , float ,       std::round(x) )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , double ,      std::round(x) )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , long double , std::round(x) )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , float ,       std::round(arg0) )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , double ,      std::round(arg0) )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , long double , std::round(arg0) )
 
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , signed int ,       x )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , signed long ,      x )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , signed long long , x )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , signed int ,       arg0 )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , signed long ,      arg0 )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , signed long long , arg0 )
 
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , unsigned int ,       x )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , unsigned long ,      x )
-UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , unsigned long long , x )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , unsigned int ,       arg0 )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , unsigned long ,      arg0 )
+UTILITY_STLMATH_FUNC_UNARY_TEMPLATE_SPEC( round , unsigned long long , arg0 )
 
 }   //-- namespace stlmath --
 }   //-- namespace utility --
