@@ -16,38 +16,44 @@
 
 namespace algorithm {
 
-template<typename T>
 struct min {
-    typedef T value_type;
     typedef std::size_t size_type;
 
     template<typename V>
     inline constexpr size_type operator() (const V& vec) const {
         auto b = std::begin(vec), e = std::end(vec);
-        return std::distance(b, std::min_element(b, e));
+        return this->operator ()(b, e);
+    }
+    template<typename ForwardIt>
+    inline constexpr size_type operator() (ForwardIt begin, ForwardIt end) const {
+        return std::distance(begin, std::min_element(begin, end));
     }
 };
-template<typename T>
 struct max {
-    typedef T value_type;
     typedef std::size_t size_type;
 
     template<typename V>
     inline constexpr size_type operator() (const V& vec) const {
         auto b = std::begin(vec), e = std::end(vec);
-        return std::distance(b, std::max_element(b, e));
+        return this->operator ()(b, e);
+    }
+    template<typename ForwardIt>
+    inline constexpr size_type operator() (ForwardIt begin, ForwardIt end) const {
+        return std::distance(begin, std::max_element(begin, end));
     }
 };
-template<typename T>
 struct minmax {
-    typedef T value_type;
     typedef std::size_t size_type;
 
     template<typename V>
     inline constexpr std::pair<size_type, size_type> operator() (const V& vec) const {
         auto b = std::begin(vec), e = std::end(vec);
-        auto minmax = std::minmax_element(b, e);
-        return std::make_pair(std::distance(b, minmax.first), std::distance(b, minmax.second));
+        return this->operator ()(b, e);
+    }
+    template<typename ForwardIt>
+    inline constexpr std::pair<size_type, size_type> operator() (ForwardIt begin, ForwardIt end) const {
+        auto minmax = std::minmax_element(begin, end);
+        return std::make_pair(std::distance(begin, minmax.first), std::distance(begin, minmax.second));
     }
 };
 

@@ -20,6 +20,7 @@
 #include "../../../lib/utility/stlmath.hpp"
 #include "../../../lib/utility/valarray.hpp"
 #include "../../../lib/utility/vector.hpp"
+#include "../../../lib/utility/assign_if.hpp"
 #include "../../../lib/utility/math/euclidean_distance.hpp"
 #include "../../../lib/algorithm/quick_select.hpp"
 #include "../../../lib/algorithm/binary_search.hpp"
@@ -57,7 +58,7 @@ struct threshold {
     {}
 
     inline constexpr value_type operator() (const value_type val) const {
-        return 0.08 * (1.001 - val * (1.0 - 0.5 * threshold_multiplier));
+        return 12.5 / (1.001 - val * (1.0 - 0.5 * threshold_multiplier));
     }
     value_type threshold_multiplier;
 };
@@ -135,10 +136,8 @@ struct cmn_ga {
         for (population_size = 0; population_size < params.initial_population_size; ++population_size) {
             points[population_size] = std::move(initialPoints[population_size]);
             fitness[population_size] = fitness_f(points[population_size]);
-            if (min_fitness > fitness[population_size])
-                min_fitness = fitness[population_size];
-            if (max_fitness < fitness[population_size])
-                max_fitness = fitness[population_size];
+            ::utility::assign_if_greater<real_type>()(min_fitness, fitness[population_size]);
+            ::utility::assign_if_less   <real_type>()(max_fitness, fitness[population_size]);
         }
 
         proximity_matrix.resize(params.max_population_size);
@@ -153,6 +152,8 @@ struct cmn_ga {
     auto operator() () -> std::vector<point_type> {
         using std::cout;
         using std::endl;
+
+        cout << "GA started" << endl;
 
         indices_type localOptimas;
         real_type thresholdMultiplier = 1.0;
@@ -169,17 +170,19 @@ struct cmn_ga {
             ++generation_number;
             thresholdMultiplier *= 0.9;
         }
+        cout << "GA finished" << endl;
         std::vector<point_type> optimaPoints (localOptimas.size());
         for (size_type optimaIndex = 0; optimaIndex < localOptimas.size(); ++optimaIndex)
             optimaPoints[optimaIndex] = points[optimaIndex];
         return optimaPoints;
     }
 
-    auto local_convergence(const indices_type optimaIndices) const -> mask_type {
-        mask_type converged (false, optimaIndices.size());
-        for (size_type optimaIndex = 0; optimaIndex < optimaIndices.size(); ++optimaIndex) {
-            for (size_type k = 0; !converged[optimaIndex] && k < population_size; ++k) {
-                converged[optimaIndex] = local_convergence_criteria < proximity(optimaIndex, k);
+    auto local_convergence(const indices_type& localOptimas) const -> mask_type {
+        mask_type converged (false, localOptimas.size());
+        for (size_type optimaNumber = 0; optimaNumber < localOptimas.size(); ++optimaNumber) {
+            for (size_type k = 0; !converged[optimaNumber] && k < population_size; ++k) {
+                if (localOptimas[optimaNumber] != k)
+                    converged[optimaNumber] = converged[optimaNumber] || local_convergence_criteria < proximity(localOptimas[optimaNumber], k);
             }
         }
         return converged;
@@ -208,26 +211,38 @@ struct cmn_ga {
         size_type mutationNumber = 0;
         while (tryNumber < params.max_try_number && mutationNumber < params.mutated_individuals_number) {
             size_type mutationIndex = dist(engine);
-            point_type mutantICode = mutation(mutationIndex);
-            if ( real_space.is_in(mutantICode) &&
-                    addition(mutantICode, scaledFitness, population_size + pairIndexOnce.used_number() + mutationNumber))
+            point_type mutantPoint = mutation(mutationIndex);
+            if ( real_space.is_in(mutantPoint) &&
+                    addition(mutantPoint, scaledFitness, population_size + pairIndexOnce.used_number() + mutationNumber))
                 ++mutationNumber;
             ++tryNumber;
         }
-        population_size = population_size + pairIndexOnce.used_number() + mutationNumber;
+
+        size_type nextPopulationSize = population_size + pairIndexOnce.used_number() + mutationNumber;
+        size_type addedMinFitnessIndex, addedMaxFitnessIndex;
+        auto addedBeginIt = std::begin(fitness) + population_size;
+        auto addedEndIt   = std::begin(fitness) + nextPopulationSize;
+        std::tie(addedMinFitnessIndex, addedMaxFitnessIndex) = ::algorithm::minmax()(addedBeginIt, addedEndIt);
+        ::utility::assign_if_greater<real_type>()(min_fitness, fitness[population_size + addedMinFitnessIndex]);
+        ::utility::assign_if_less   <real_type>()(max_fitness, fitness[population_size + addedMaxFitnessIndex]);
+
+        population_size = nextPopulationSize;
     }
 
     auto addition(const point_type& point, const std::valarray<real_type>& scaledFitness, const size_type index) -> bool {
-        std::vector<real_type> proximitiesVector (population_size);
+        std::vector<real_type> proximitiesVector (index + 1);
         real_type nearestIndex = 0;
         for (size_type k = 0; k < population_size; ++k) {
             proximitiesVector[k] = proximity_f(point, points[k]);
             if (proximitiesVector[nearestIndex] < proximitiesVector[k])
                 nearestIndex = k;
         }
-        register real_type thresholdRMin = threshold_f(scaledFitness[nearestIndex]);
+        for (size_type k = population_size; k < index; ++k)
+            proximitiesVector[k] = proximity_f(point, points[k]);
+        proximitiesVector[index] = proximity_f(point, point);
+        real_type thresholdProximity = threshold_f(scaledFitness[nearestIndex]);
         bool success = true;
-        if (thresholdRMin < proximitiesVector[nearestIndex])
+        if (thresholdProximity < proximitiesVector[nearestIndex])
             success = false;
         else {
             fitness[index] = fitness_f(point);
@@ -241,7 +256,7 @@ struct cmn_ga {
         point_type mutant (real_space.size());
         for (size_type dim = 0; dim < real_space.size(); ++dim) {
             double mean = points[index][dim];
-            double stddev = real_space.right_bounds()[dim] / (2.0 * 3.0);
+            double stddev = (real_space.right_bounds()[dim] - real_space.left_bounds()[dim]) / (2.0 * 3.0);
             mutant[dim] = std::normal_distribution<real_type>( mean, stddev )(engine);
         }
         return mutant;
@@ -260,24 +275,24 @@ struct cmn_ga {
         indices_type p1 = proportionate_selection(scaledFitness, params.crossover_pair_number);
         indices_type p2 (params.crossover_pair_number);
         for (size_type p1Index = 0; p1Index < params.crossover_pair_number; ++p1Index) {
-            std::valarray<real_type> proximitiesVector = proximities(p1[p1Index]);
+            std::valarray<real_type> proximitiesVector = proximities(p1[p1Index], false);
             indices_type crowd = proportionate_selection(proximitiesVector, params.crowd_size);
             std::valarray<real_type> crowdFitness = scaledFitness[crowd];
-            size_type crowdFittestIndex = algorithm::max<real_type>()(crowdFitness);
+            size_type crowdFittestIndex = algorithm::max()(crowdFitness);
             p2[p1Index] = crowd[crowdFittestIndex];
         }
         return std::make_pair(p1, p2);
     }
     auto proportionate_selection(const std::valarray<real_type>& proportions, const size_type selectedNumber) const -> indices_type {
-        register real_type proportionsSum = proportions.sum();
-        std::uniform_real_distribution<real_type> dist (0, proportionsSum);
-        std::valarray<real_type> roulette = utility::valarray::cumulative_sum(proportions / proportionsSum);
+        real_type overall = proportions.sum();
+        std::uniform_real_distribution<real_type> dist (0, overall);
+        std::valarray<real_type> roulette = utility::valarray::cumulative_sum(proportions);
 
-        register size_type selectedIndex = 0;
-        indices_type selected (params.crossover_pair_number);
+        size_type selectedIndex = 0;
+        indices_type selected ( selectedNumber );
 
-        for (size_type k = 0; k < params.crossover_pair_number; ++k) {
-            size_type roll = dist(engine);
+        for (size_type k = 0; k < selectedNumber; ++k) {
+            real_type roll = dist(engine);
             size_type rollIndex = algorithm::binary_search<real_type>()(roulette, roll);
             selected[selectedIndex++] = rollIndex;
         }
@@ -292,25 +307,34 @@ struct cmn_ga {
 
         for (const auto optimaIndex : localOptimas) {
             std::valarray<real_type> relativeFitness (population_size);
-            register real_type diffFitness = fitness[optimaIndex] - min_fitness;
+            real_type diffFitness = fitness[optimaIndex] - min_fitness;
             for (size_type k = 0; k < population_size; ++k)
                 relativeFitness[k] = (fitness[k] - min_fitness) / diffFitness;
 
-            size_type medianIndex = algorithm::quick_select<size_type>()(relativeFitness, (population_size + 1) / 2);
+            size_type medianIndex = algorithm::quick_select<real_type>()(relativeFitness, population_size / 2);
 
             using utility::stlmath::ln;
-            double exponentialScaleFactor = ln<real_type>()(exponential_scaling_function_median_value) / ln<real_type>()(relativeFitness[medianIndex]);
-            relativeFitness = std::pow(relativeFitness, exponentialScaleFactor);
-            relativeFitnesses.push_back(std::move(relativeFitness));
+            real_type base = real_type(1.0) + relativeFitness[medianIndex];
+            base *= base;
+            std::valarray<real_type> logRelativeFitness = std::log(real_type(1.0) + relativeFitness) / ln<real_type>()(base);
+            relativeFitnesses.push_back(std::move(logRelativeFitness));
         }
         std::valarray<real_type> scaledFitness (population_size);
+        size_type skipOptimaNumber = 0;
         for (size_type k = 0; k < population_size; ++k) {
-            register real_type proximitySum = 0, proximitySumWeighted = 0;
-            for (size_type i = 0; i < localOptimas.size(); ++i) {
-                proximitySum += proximity(i, k);
-                proximitySumWeighted += proximity(i, k) * relativeFitnesses[i][k];
+            if (skipOptimaNumber < localOptimas.size() && localOptimas[skipOptimaNumber] == k) {
+                scaledFitness[k] = 1.0;
+                ++skipOptimaNumber;
             }
-            scaledFitness[k] = proximitySumWeighted / proximitySum;
+            else {
+                real_type sum = 0, wSum = 0;
+                for (size_type optimaNumber = 0; optimaNumber< localOptimas.size(); ++optimaNumber) {
+                    size_type optimaIndex = localOptimas[optimaNumber];
+                    sum += proximity(optimaIndex, k);
+                    wSum += proximity(optimaIndex, k) * relativeFitnesses[optimaNumber][k];
+                }
+                scaledFitness[k] = wSum / sum;
+            }
         }
         return scaledFitness;
     }
@@ -330,22 +354,24 @@ struct cmn_ga {
 
     auto nearest_neighbours(const size_type index) const -> indices_type {
         size_type rank = population_size - params.nearest_individuals_number - 1;
-        std::valarray<real_type> inverseDistancesVector = proximities(index);
-        register size_type rankIndex = algorithm::quick_select<size_type>()(inverseDistancesVector, rank);
-        register size_type rankValue = inverseDistancesVector[rankIndex];
+        std::valarray<real_type> inverseDistancesVector = proximities(index, false);
+        size_type rankIndex = algorithm::quick_select<real_type>()(inverseDistancesVector, rank);
+        real_type rankValue = inverseDistancesVector[rankIndex];
         size_type nearestIndex = 0;
         indices_type nearest (params.nearest_individuals_number);
         for (size_type k = 0; k < population_size; ++k)
             if (inverseDistancesVector[k] > rankValue)
                 nearest[nearestIndex++] = k;
+        assert(nearest.size() == nearestIndex);
         return nearest;
     }
 
-    auto proximities(const size_type index) const -> std::valarray<real_type> {
+    auto proximities(const size_type index, const bool includeSelf = true) const -> std::valarray<real_type> {
         std::valarray<real_type> inverseDistancesVector (population_size);
         for (size_type j = 0; j < index; ++j)
             inverseDistancesVector[j] = proximity_matrix[index][j];
-        //inverse_distances_vector[index][index] = std::numeric_limits<double>::infinity();
+        if (includeSelf)
+            inverseDistancesVector[index] = proximity_matrix[index][index];
         for (size_type i = index + 1; i < population_size; ++i)
             inverseDistancesVector[i] = proximity_matrix[i][index];
         return inverseDistancesVector;

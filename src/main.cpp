@@ -67,12 +67,12 @@ auto main(int argc, char** argv) -> int {
 
     genetic_algorithm::cmn_ga::cmn_ga::parameters params;
     params.max_population_size = 10000;
-    params.initial_population_size = 1000;
-    params.nearest_individuals_number = 10;
-    params.crossover_pair_number = 20;
-    params.crowd_size = 20;
-    params.mutated_individuals_number = 40;
-    params.max_try_number = 40;
+    params.initial_population_size = 100;
+    params.nearest_individuals_number = 5;
+    params.crossover_pair_number = 5;
+    params.crowd_size = 10;
+    params.mutated_individuals_number = 10;
+    params.max_try_number = 20;
     params.precision = 3;
 
     const std::size_t spaceSize = 3;

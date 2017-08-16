@@ -24,12 +24,12 @@ struct binary_search {
         register size_type left = 0, right = vec.size() - 1, middle = 0;
         while (left < right) {
             middle = left + (right - left) / 2;
-            if (vec[middle] == val)
-                break;
-            else if (vec[middle] < val)
+            if (vec[middle] < val && val <= vec[middle + 1])
+                return middle + 1;
+            else if (vec[middle + 1] < val)
                 left = middle + 1;
             else
-                right = middle - 1;
+                right = middle;
         }
         return left + (right - left) / 2;
     }
