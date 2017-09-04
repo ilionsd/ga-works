@@ -10,7 +10,7 @@
 
 
 #include <cassert>
-#include "../stlmath.hpp"
+#include "../../../include/fn/math.hpp"
 
 namespace utility {
 namespace math {
@@ -25,7 +25,7 @@ struct euclidean_distance {
         value_type sum = 0;
         for (std::size_t k = 0; k < v1.size(); ++k)
             sum += (v1[k] - v2[k]) * (v1[k] - v2[k]);
-        return ::utility::stlmath::sqrt<value_type>()( sum );
+        return ::fn::math::sqrt<value_type>()( sum );
     }
 };
 

@@ -17,7 +17,7 @@
 #include <bits/stl_function.h>
 
 
-#include "../../../lib/utility/stlmath.hpp"
+#include "../../../include/fn/math.hpp"
 #include "../../../lib/utility/valarray.hpp"
 #include "../../../lib/utility/vector.hpp"
 #include "../../../lib/utility/assign_if.hpp"
@@ -28,8 +28,7 @@
 #include "../../../lib/algorithm/once.hpp"
 #include "../common/space.hpp"
 #include "../common/generating/uniform_generator.hpp"
-#include "../common/coding/gray_coder.hpp"
-#include "../common/coding/numeric_coder.hpp"
+#include "proximity.hpp"
 
 
 namespace genetic_algorithm {
@@ -70,7 +69,6 @@ struct cmn_ga {
     typedef std::valarray<size_type> indices_type;
     typedef std::valarray<bool> mask_type;
 
-    static constexpr real_type exponential_scaling_function_median_value = 0.5;
     static constexpr real_type local_convergence_criteria = 1e+10;
 
     static const std::function<real_type(point_type, point_type)> default_proximity;
@@ -92,7 +90,7 @@ struct cmn_ga {
     std::valarray<real_type> fitness;
     real_type min_fitness, max_fitness;
     std::vector<point_type> points;
-    std::vector<std::vector<real_type>> proximity_matrix;
+    proximity_matrix<real_type> proximities;
 
     std::size_t generation_number;
     std::size_t population_size;
@@ -117,7 +115,7 @@ struct cmn_ga {
                 min_fitness (),
                 max_fitness (),
                 points (),
-                proximity_matrix (),
+                proximities (),
                 proximity_f(default_proximity)
     {}
 
@@ -140,12 +138,12 @@ struct cmn_ga {
             ::utility::assign_if_less   <real_type>()(max_fitness, fitness[population_size]);
         }
 
-        proximity_matrix.resize(params.max_population_size);
+        proximities.reserve(params.max_population_size);
         for (size_type i = 0; i < population_size; ++i) {
-            proximity_matrix[i].resize(i + 1);
-            for (size_type j = 0; j <= i; ++j) {
-                proximity_matrix[i][j] = proximity_f(points[i], points[j]);
-            }
+            std::valarray<real_type> proximitiesVector (i);
+            for (size_type j = 0; j < i; ++j)
+                proximitiesVector[j] = proximity_f(points[i], points[j]);
+            proximities.add_vector(std::move(proximitiesVector));
         }
     }
 
@@ -182,7 +180,7 @@ struct cmn_ga {
         for (size_type optimaNumber = 0; optimaNumber < localOptimas.size(); ++optimaNumber) {
             for (size_type k = 0; !converged[optimaNumber] && k < population_size; ++k) {
                 if (localOptimas[optimaNumber] != k)
-                    converged[optimaNumber] = converged[optimaNumber] || local_convergence_criteria < proximity(localOptimas[optimaNumber], k);
+                    converged[optimaNumber] = converged[optimaNumber] || local_convergence_criteria < proximities(localOptimas[optimaNumber], k);
             }
         }
         return converged;
@@ -230,7 +228,7 @@ struct cmn_ga {
     }
 
     auto addition(const point_type& point, const std::valarray<real_type>& scaledFitness, const size_type index) -> bool {
-        std::vector<real_type> proximitiesVector (index + 1);
+        std::valarray<real_type> proximitiesVector (index);
         real_type nearestIndex = 0;
         for (size_type k = 0; k < population_size; ++k) {
             proximitiesVector[k] = proximity_f(point, points[k]);
@@ -239,7 +237,6 @@ struct cmn_ga {
         }
         for (size_type k = population_size; k < index; ++k)
             proximitiesVector[k] = proximity_f(point, points[k]);
-        proximitiesVector[index] = proximity_f(point, point);
         real_type thresholdProximity = threshold_f(scaledFitness[nearestIndex]);
         bool success = true;
         if (thresholdProximity < proximitiesVector[nearestIndex])
@@ -247,7 +244,7 @@ struct cmn_ga {
         else {
             fitness[index] = fitness_f(point);
             points [index] = std::move(point);
-            proximity_matrix[index] = std::move(proximitiesVector);
+            proximities.add_vector(std::move(proximitiesVector));
         }
         return success;
     }
@@ -275,7 +272,7 @@ struct cmn_ga {
         indices_type p1 = proportionate_selection(scaledFitness, params.crossover_pair_number);
         indices_type p2 (params.crossover_pair_number);
         for (size_type p1Index = 0; p1Index < params.crossover_pair_number; ++p1Index) {
-            std::valarray<real_type> proximitiesVector = proximities(p1[p1Index], false);
+            std::valarray<real_type> proximitiesVector = proximities.vector(p1[p1Index], false);
             indices_type crowd = proportionate_selection(proximitiesVector, params.crowd_size);
             std::valarray<real_type> crowdFitness = scaledFitness[crowd];
             size_type crowdFittestIndex = algorithm::max()(crowdFitness);
@@ -313,9 +310,8 @@ struct cmn_ga {
 
             size_type medianIndex = algorithm::quick_select<real_type>()(relativeFitness, population_size / 2);
 
-            using utility::stlmath::ln;
-            real_type base = real_type(1.0) + relativeFitness[medianIndex];
-            base *= base;
+            using ::fn::math::ln;
+            real_type base = ::fn::math::square<real_type>()(real_type(1.0) + relativeFitness[medianIndex]);
             std::valarray<real_type> logRelativeFitness = std::log(real_type(1.0) + relativeFitness) / ln<real_type>()(base);
             relativeFitnesses.push_back(std::move(logRelativeFitness));
         }
@@ -330,8 +326,8 @@ struct cmn_ga {
                 real_type sum = 0, wSum = 0;
                 for (size_type optimaNumber = 0; optimaNumber< localOptimas.size(); ++optimaNumber) {
                     size_type optimaIndex = localOptimas[optimaNumber];
-                    sum += proximity(optimaIndex, k);
-                    wSum += proximity(optimaIndex, k) * relativeFitnesses[optimaNumber][k];
+                    sum += proximities(optimaIndex, k);
+                    wSum += proximities(optimaIndex, k) * relativeFitnesses[optimaNumber][k];
                 }
                 scaledFitness[k] = wSum / sum;
             }
@@ -354,7 +350,7 @@ struct cmn_ga {
 
     auto nearest_neighbours(const size_type index) const -> indices_type {
         size_type rank = population_size - params.nearest_individuals_number - 1;
-        std::valarray<real_type> inverseDistancesVector = proximities(index, false);
+        std::valarray<real_type> inverseDistancesVector = proximities.vector(index, false);
         size_type rankIndex = algorithm::quick_select<real_type>()(inverseDistancesVector, rank);
         real_type rankValue = inverseDistancesVector[rankIndex];
         size_type nearestIndex = 0;
@@ -364,22 +360,6 @@ struct cmn_ga {
                 nearest[nearestIndex++] = k;
         assert(nearest.size() == nearestIndex);
         return nearest;
-    }
-
-    auto proximities(const size_type index, const bool includeSelf = true) const -> std::valarray<real_type> {
-        std::valarray<real_type> inverseDistancesVector (population_size);
-        for (size_type j = 0; j < index; ++j)
-            inverseDistancesVector[j] = proximity_matrix[index][j];
-        if (includeSelf)
-            inverseDistancesVector[index] = proximity_matrix[index][index];
-        for (size_type i = index + 1; i < population_size; ++i)
-            inverseDistancesVector[i] = proximity_matrix[i][index];
-        return inverseDistancesVector;
-    }
-    auto proximity(size_type i, size_type j) const -> real_type {
-        if (i < j)
-            std::swap(i, j);
-        return proximity_matrix[i][j];
     }
 };
 

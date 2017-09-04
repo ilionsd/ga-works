@@ -18,8 +18,7 @@
 #include <type_traits>
 
 
-
-#include "stlmath.hpp"
+#include "../../include/fn/math.hpp"
 
 
 namespace utility {
@@ -112,13 +111,13 @@ constexpr auto reduce(F f, const std::valarray<T>& array) -> T {
 template<typename Expr>
 constexpr auto round(const Expr& expr) {
     typedef typename Expr::value_type value_type;
-    typedef std::_UnClos<::utility::stlmath::round<value_type>, std::_Expr, typename Expr::value_type> closure;
+    typedef std::_UnClos<::fn::math::round<value_type>, std::_Expr, typename Expr::value_type> closure;
     return std::_Expr<closure, value_type>(expr());
 }
 template<typename T>
 constexpr auto round(const std::valarray<T>& array) {
     typedef T value_type;
-    typedef std::_UnClos<::utility::stlmath::round<value_type>, std::_ValArray, value_type> closure;
+    typedef std::_UnClos<::fn::math::round<value_type>, std::_ValArray, value_type> closure;
     return std::_Expr<closure, value_type>(closure(array));
 }
 

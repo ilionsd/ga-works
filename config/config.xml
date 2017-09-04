@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <methods>
+        <method name="GA">
+            <description>Genetic Algorithm</description>
+            <arguments>
+                <argument>
+                    <name>max-size</name>
+                    <type>std::size_t</type>
+                    <description>Population max size</description>
+                    <value>1000</value>
+                </argument>
+                <argument name="initial-size">
+                   <description>Population initial size</description>
+                   <value type="std::size_t">100</value>
+                </argument>
+                <argument name="crossover">
+                   <description>Number of crossover pairs in population</description>
+                   <value type="std::size_t">10</value>
+                </argument>
+                <argument name="mutation">
+                    <description>Number of mutated individuals in population</description>
+                    <value type="std::size_t">0.2</value>
+                </argument>
+            </arguments>
+        </method>
+        <method name="CMN-GA">
+            <description>Cumulative Multi-Niching Genetic Algorithm for Multimodal Function Optimization</description>
+            <arguments>
+                <argument name="max-size">
+                    <description>Population max size</description>
+                    <value type="std::size_t">10000</value>
+                </argument>
+                <argument name="initial-size">
+                   <description>Population initial size</description>
+                   <value type="std::size_t">100</value>
+                </argument>
+                <argument name="crossover">
+                   <description>Number of crossover pairs in population</description>
+                   <value type="std::size_t">10</value>
+                </argument>
+                <argument name="mutation">
+                    <description>Number of mutated individuals in population</description>
+                    <value type="std::size_t">10</value>
+                </argument>
+                <argument name="nearest">
+                    <description>Number of nearest individuals individual must be more fit to be local optima</description>
+                    <value type="std::size_t">15</value>
+                </argument>
+                <argument name="crowd">
+                    <description>Number of individuals to choose from for mating for crossover</description>
+                    <value type="std::size_t">10</value>
+                </argument>
+                <argument name="crossover-tries">
+                    <description>Number of tries to perform all crossovers</description>
+                    <value type="std::size_t">12</value>
+                </argument>
+                <argument name="mutation-tries">
+                    <description>Number of tries to perform all mutations</description>
+                    <value type="std::size_t">15</value>
+                </argument>
+            </arguments>
+        </method>
+    </methods>
+</configuration>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

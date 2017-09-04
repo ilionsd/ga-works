@@ -21,7 +21,6 @@
 
 #include "../../../types/primitive.hpp"
 #include "../../../utility/valarray.hpp"
-#include "../../../utility/stlmath.hpp"
 #include "../space.hpp"
 
 

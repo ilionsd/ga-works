@@ -18,7 +18,6 @@
 
 #include "../../../../lib/utility/valarray.hpp"
 #include "../../../../lib/utility/vector.hpp"
-#include "../../../../lib/utility/stlmath.hpp"
 
 #include "../../../../lib/genetic_algorithm/common/generating/uniform_generator.hpp"
 #include "../../../../lib/genetic_algorithm/common/coding/numeric_coder.hpp"

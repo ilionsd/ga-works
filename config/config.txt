@@ -1,0 +1,12 @@
+#
+#CMN-GA config
+#
+[cmn-ga]
+max-size = 1000
+initial-size = 100
+crossover = 0.1
+mutation = 0.2
+nearest = 0.05
+crowd = 0.05
+crossover-tries = 1.1
+mutation-tries = 1.1

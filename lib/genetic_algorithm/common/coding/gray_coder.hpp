@@ -18,7 +18,7 @@
 
 #include "../../../types/primitive.hpp"
 #include "../../../utility/valarray.hpp"
-#include "../../../utility/stlmath.hpp"
+#include "../../../../include/fn/math.hpp"
 #include "../space.hpp"
 
 
@@ -40,7 +40,7 @@ public:
     {
         typedef typename uint_space_type::size_type size_type;
         for (size_type dim = 0; dim < space.size(); ++dim) {
-            namespace math = ::utility::stlmath;
+            namespace math = ::fn::math;
             mGeneSizes[dim] = size_type(
                     math::ceil<double>()(
                             math::log2<double>()(space.right_bounds()[dim])
