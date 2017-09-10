@@ -9,13 +9,11 @@
 #define INCLUDE_FN_MATH_V_HPP_
 
 
-#include "../../lib/fn/math/vector_fn.hpp"
+#include "../../lib/fn/math/math_v.hpp"
 
 
 namespace fn {
 namespace math {
-
-
 
 }   //-- namespace math --
 }   //-- namespace fn --

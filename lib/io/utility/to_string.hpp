@@ -19,27 +19,19 @@
 
 
 namespace io {
+namespace utility {
 
-template<typename T>
-constexpr std::string to_string(const std::valarray<T>& array) {
+template<typename V>
+constexpr std::string to_string(const V& v) {
     std::stringstream ss;
     {
         using namespace std::literals::string_literals;
-        ss << "{" << join<std::valarray<T>>()(array, ", "s) << "}";
+        ss << "{" << join(v, ", "s) << "}";
     }
     return ss.str();
 }
 
-template<typename T>
-constexpr std::string to_string(const std::vector<T>& vector) {
-    std::stringstream ss;
-    {
-        using namespace std::literals::string_literals;
-        ss << "{" << join<std::vector<T>>()(vector, ", "s) << "}";
-    }
-    return ss.str();
-}
-
+}   //-- namespace utility --
 }   //-- namespace io --
 
 

@@ -1,12 +1,12 @@
 /*
- * ga_options.hpp
+ * general_options.hpp
  *
  *  Created on: Aug 31, 2017
  *      Author: ilion
  */
 
-#ifndef SRC_OPTIONS_GA_OPTIONS_HPP_
-#define SRC_OPTIONS_GA_OPTIONS_HPP_
+#ifndef SRC_OPTIONS_GENERAL_HPP_
+#define SRC_OPTIONS_GENERAL_HPP_
 
 
 #include <vector>
@@ -15,12 +15,10 @@
 
 namespace options {
 
-struct ga {
+struct general {
     static const std::string
-        max_size,
-        initial_size,
-        crossover,
-        mutation;
+        help,
+        version;
 
     static const std::vector<std::string> all;
 };
@@ -28,4 +26,4 @@ struct ga {
 }   //-- namespace options --
 
 
-#endif /* SRC_OPTIONS_GA_OPTIONS_HPP_ */
+#endif /* SRC_OPTIONS_GENERAL_HPP_ */

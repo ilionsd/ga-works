@@ -9,6 +9,11 @@
 #define INCLUDE_FN_MATH_HPP_
 
 
+#include "../../lib/fn/math/logical_yes.hpp"
+#include "../../lib/fn/math/logical_not.hpp"
+#include "../../lib/fn/math/logical_and.hpp"
+#include "../../lib/fn/math/logical_or.hpp"
+
 #include "../../lib/fn/math/abs.hpp"
 
 #include "../../lib/fn/math/floor.hpp"
@@ -32,6 +37,11 @@
 
 namespace fn {
 namespace math {
+
+template<typename T> struct logical_yes;
+template<typename T> struct logical_not;
+template<typename T> struct logical_and;
+template<typename T> struct logical_or;
 
 template<typename T> struct abs;
 

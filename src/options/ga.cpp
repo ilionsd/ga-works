@@ -5,7 +5,7 @@
  *      Author: ilion
  */
 
-#include "ga_options.hpp"
+#include "ga.hpp"
 
 namespace options {
 

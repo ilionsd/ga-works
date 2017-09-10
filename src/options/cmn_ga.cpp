@@ -5,7 +5,7 @@
  *      Author: ilion
  */
 
-#include "cmnga_options.hpp"
+#include "cmn_ga.hpp"
 
 namespace options {
 

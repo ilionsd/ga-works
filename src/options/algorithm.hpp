@@ -1,12 +1,12 @@
 /*
- * general_options.hpp
+ * method_options.hpp
  *
  *  Created on: Aug 31, 2017
  *      Author: ilion
  */
 
-#ifndef SRC_OPTIONS_GENERAL_OPTIONS_HPP_
-#define SRC_OPTIONS_GENERAL_OPTIONS_HPP_
+#ifndef SRC_OPTIONS_ALGORITHM_HPP_
+#define SRC_OPTIONS_ALGORITHM_HPP_
 
 
 #include <vector>
@@ -15,12 +15,8 @@
 
 namespace options {
 
-struct general {
+struct algorithm {
     static const std::string
-        help,
-        version,
-        input,
-        output,
         method,
         precision;
 
@@ -30,4 +26,4 @@ struct general {
 }   //-- namespace options --
 
 
-#endif /* SRC_OPTIONS_GENERAL_OPTIONS_HPP_ */
+#endif /* SRC_OPTIONS_ALGORITHM_HPP_ */

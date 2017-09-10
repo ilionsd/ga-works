@@ -12,20 +12,20 @@
 #include <ostream>
 
 
-#include "to_string.hpp"
+#include "utility/to_string.hpp"
 
 
 namespace io {
 
 template<typename T>
 constexpr std::ostream& operator<< (std::ostream& out, const std::valarray<T>& v) {
-    out << to_string(v);
+    out << utility::to_string(v);
     return out;
 }
 
 template<typename T>
 constexpr std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
-    out << to_string(v);
+    out << utility::to_string(v);
     return out;
 }
 

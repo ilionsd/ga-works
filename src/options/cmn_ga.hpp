@@ -5,8 +5,8 @@
  *      Author: ilion
  */
 
-#ifndef SRC_OPTIONS_CMNGA_OPTIONS_HPP_
-#define SRC_OPTIONS_CMNGA_OPTIONS_HPP_
+#ifndef SRC_OPTIONS_CMN_GA_HPP_
+#define SRC_OPTIONS_CMN_GA_HPP_
 
 
 #include <vector>
@@ -32,4 +32,4 @@ struct cmn_ga {
 }   //-- namespace options --
 
 
-#endif /* SRC_OPTIONS_CMNGA_OPTIONS_HPP_ */
+#endif /* SRC_OPTIONS_CMN_GA_HPP_ */

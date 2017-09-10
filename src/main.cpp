@@ -24,6 +24,8 @@
 #include "../lib/genetic_algorithm/common/space.hpp"
 #include "../lib/genetic_algorithm/cmn_ga/cmn_ga.hpp"
 
+#include "options/description.hpp"
+
 
 #include "../test/test.hpp"
 
@@ -33,156 +35,17 @@ namespace po = ::boost::program_options;
 
 constexpr double version = 0.15;
 
-struct option {
-static const std::string
-    help,
-    version,
-    input,
-    output,
-    method,
-    precision;
-};
-const std::string option::help      = "help";
-const std::string option::version   = "version";
-const std::string option::input     = "input";
-const std::string option::output    = "output";
-const std::string option::method    = "method";
-const std::string option::precision = "precision";
-
-
-struct method {
-    static const std::string ga;
-    static const std::string cmn_ga;
-
-    static const std::vector<std::string> options;
-};
-const std::string method::ga = "GA";
-const std::string method::cmn_ga = "CMN-GA";
-
-const std::vector<std::string> method::options {
-    method::ga,
-    method::cmn_ga
-};
-
-struct cmn_ga {
-    static const std::string
-    max_size,
-    initial_size,
-    crossover,
-    mutation,
-    nearest,
-    crowd,
-    crossover_tries,
-    mutation_tries;
-
-    static const std::vector<std::string> options;
-};
-const std::string cmn_ga::max_size = "max-size";
-const std::string cmn_ga::initial_size = "initial-size";
-const std::string cmn_ga::crossover = "crossover";
-const std::string cmn_ga::mutation = "mutation";
-const std::string cmn_ga::nearest = "nearest";
-const std::string cmn_ga::crowd = "crowd";
-const std::string cmn_ga::crossover_tries = "crossover-tries";
-const std::string cmn_ga::mutation_tries = "mutation-tries";
-
-const std::vector<std::string> cmn_ga::options {
-    cmn_ga::max_size,
-    cmn_ga::initial_size,
-    cmn_ga::crossover,
-    cmn_ga::mutation,
-    cmn_ga::nearest,
-    cmn_ga::crowd,
-    cmn_ga::crossover_tries,
-    cmn_ga::mutation_tries
-};
-
-const std::unordered_map<std::string, std::vector<std::string>> method_options {
-    { method::cmn_ga, cmn_ga::options }
-};
-
 
 po::options_description
 config_options(const std::string&, const po::options_description&);
-
 void work(const genetic_algorithm::cmn_ga::cmn_ga::parameters&);
+void parse_options(int argc, char** argv);
 
-auto main(int argc, char** argv) -> int {
+auto main(int argc, char* argv[]) -> int {
 
     ::test::testing();
 
-    po::options_description general("General options");
-    general.add_options()
-            ( (option::help    + ",h").c_str(), "Produce a help message" )
-            ( (option::version + ",v").c_str(), "Outputs program version");
-
-    po::options_description io("Input/Output options");
-    io.add_options()
-            ( (option::input  + ",i").c_str(), po::value<std::string>(), "Input file" )
-            ( (option::output + ",o").c_str(), po::value<std::string>(), "Output file");
-
-    std::stringstream ss;
-    ss << "Methods:" << std::endl;
-    ss << "CMN-GA: \t";
-    ss << "Cumulative Multi-Niching Genetic Algorithm for multimodal function optimization." << std::endl;
-
-    po::options_description algorithm("Algorithm options");
-    algorithm.add_options()
-            ( (option::method    + ",m").c_str(), po::value<std::string>(), ss.str().c_str())
-            ( (option::precision + ",p").c_str(), po::value<double>()     , "Precision"     );
-    po::positional_options_description positional;
-    positional.add(option::method.c_str(), 1);
-
-    std::unordered_map<std::string, po::options_description> algorithmSpecific;
-    po::options_description cmn_gaOptions("CMN-GA options");
-    cmn_gaOptions.add_options()
-            (cmn_ga::max_size    .c_str(), po::value<std::size_t>(), "Max population size")
-            (cmn_ga::initial_size.c_str(), po::value<std::size_t>(), "Initial population size")
-            (cmn_ga::crossover.c_str(), po::value<std::string>(), "Crossover pairs number")
-            (cmn_ga::mutation .c_str(), po::value<std::string>(), "Mutated individuals number")
-            (cmn_ga::nearest  .c_str(), po::value<std::string>(), "Nearest individuals number for optima criteria")
-            (cmn_ga::crowd    .c_str(), po::value<std::string>(), "Number of individuals for proximity based selection")
-            (cmn_ga::crossover_tries.c_str(), po::value<std::string>(), "Number of attempts to perform crossovers")
-            (cmn_ga::mutation_tries .c_str(), po::value<std::string>(), "Number of attempts to perform mutations");
-
-    algorithmSpecific.insert({method::cmn_ga, cmn_gaOptions});
-
-    po::options_description visible("Allowed options");
-    visible.add(general).add(io).add(algorithm).add(cmn_gaOptions);
-
-    po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).options(visible).positional(positional).run(), vm);
-    po::notify(vm);
-
-    using std::cout;
-    using std::endl;
-    if ( vm.count(option::version) )
-        cout << "Genetic algorithm optimizing program GA-Works. v" << version << endl;
-    else {
-        if ( vm.count(option::method) ) {
-            std::string methodName = vm[option::method].as<std::string>();
-            if ( vm.count(option::help) ) {
-                cout << "cmn_ga-rework " + methodName + " [" + methodName + " OPTIONS]" << endl;
-                cout << cmn_gaOptions << endl;
-            }
-            else {
-                genetic_algorithm::cmn_ga::cmn_ga::parameters params;
-                if ( vm.count(option::input) ) {
-                    std::string configFile = vm[option::input].as<std::string>();
-                    po::options_description configOptions = config_options(methodName, cmn_gaOptions);
-                    po::variables_map cfgvm;
-                    po::store(po::parse_config_file<char>(configFile.c_str(), configOptions, true), cfgvm);
-                    po::notify(cfgvm);
-                }
-
-            }
-        }
-        else if ( vm.count(option::help) ) {
-            cout << "cmn_ga-rework <METHOD> [OTHER OPTIONS]" << endl;
-            cout << general << endl;
-            cout << algorithm << endl;
-        }
-    }
+    parse_options(argc, argv);
 
     return 0;
 }
@@ -215,6 +78,54 @@ map_variables(
     }
 
     return mapped;
+}
+
+void parse_options(int argc, char** argv) {
+
+//    auto allowed = po::options_description("Allowed options")
+//        .add(options::description::general)
+//        .add(options::description::io)
+//        .add(options::description::algorithm)
+//        .add(options::description::ga)
+//        .add(options::description::cmnga);
+//
+//    auto positional = po::positional_options_description()
+//        .add(options::algorithm::method.c_str(), 1);
+//
+//    po::variables_map vm;
+//    po::store(po::command_line_parser(argc, argv).options(allowed).positional(positional).run(), vm);
+//    po::notify(vm);
+//
+//    using std::cout;
+//    using std::endl;
+//    if ( vm.count(options::general::version) )
+//        cout << "Genetic algorithm optimizing program GA-Works. v" << version << endl;
+//    else {
+//        if ( vm.count(options::algorithm::method) ) {
+//            std::string methodName = vm[options::algorithm::method].as<std::string>();
+//            if ( vm.count(options::general::help) ) {
+//                cout << "cmn_ga-rework " + methodName + " [" + methodName + " OPTIONS]" << endl;
+//                cout << "There will be method help soon..." << endl;
+//            }
+//            else {
+//                genetic_algorithm::cmn_ga::cmn_ga::parameters params;
+//                if ( vm.count(options::io::input) ) {
+//                    /*
+//                     * To Do
+//                     * Read config file to get method arguments --
+//                     * and merge with arguments that may be passed from console.
+//                     */
+//                }
+//            }
+//        }
+//        else if ( vm.count(options::general::help) ) {
+//            cout << "cmn_ga-rework <METHOD> [OTHER OPTIONS]" << endl;
+//            cout << options::description::general << endl;
+//            cout << options::description::io << endl;
+//            cout << options::description::algorithm << endl;
+//        }
+//    }
+
 }
 
 void work(const genetic_algorithm::cmn_ga::cmn_ga::parameters& params) {
