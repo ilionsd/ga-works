@@ -16,28 +16,28 @@
 #include <string>
 #include <unordered_map>
 
-#include <boost/program_options.hpp>
+//#include <boost/program_options.hpp>
 
 #include "../include/fn/math.hpp"
-#include "../lib/io/out.hpp"
 #include "../lib/utility/valarray.hpp"
+#include "../lib/io/separator.hpp"
+#include "../lib/io/utility/vector_join.hpp"
 #include "../lib/genetic_algorithm/common/space.hpp"
 #include "../lib/genetic_algorithm/cmn_ga/cmn_ga.hpp"
-
-#include "options/description.hpp"
+#include "../lib/program_options2/parsing/command_line_parser.hpp"
 
 
 #include "../test/test.hpp"
 
 
-namespace po = ::boost::program_options;
+//namespace po = ::boost::program_options;
 
 
 constexpr double version = 0.15;
 
 
-po::options_description
-config_options(const std::string&, const po::options_description&);
+//po::options_description
+//config_options(const std::string&, const po::options_description&);
 void work(const genetic_algorithm::cmn_ga::cmn_ga::parameters&);
 void parse_options(int argc, char** argv);
 
@@ -45,40 +45,41 @@ auto main(int argc, char* argv[]) -> int {
 
     ::test::testing();
 
-    parse_options(argc, argv);
+    ::program_options2::parsing::command_line_parser p;
+    ::program_options2::parsing::parse_command_line(p, argc, argv);
 
     return 0;
 }
 
-po::options_description
-config_options(const std::string& methodName, const po::options_description& commandLineOptions) {
-    po::options_description cfgFileOptions( ("Config file " + methodName + " options").c_str() );
-    for (std::size_t k = 0; k < commandLineOptions.options().size(); ++k) {
-        cfgFileOptions.add_options()(
-                (methodName + "." + commandLineOptions.options()[k]->long_name()).c_str(),
-                commandLineOptions.options()[k]->semantic().get());
-    }
-    return cfgFileOptions;
-}
-
-po::variables_map
-map_variables(
-        const std::unordered_map<std::string, std::string>&mapping,
-        const po::variables_map& srcKey,
-        const po::variables_map& srcVal) {
-    po::variables_map mapped;
-
-    for (const auto& kv : mapping) {
-        const auto& key = kv.first;
-        const auto& val = kv.second;
-        if ( !srcVal[val].empty() )
-            mapped.insert({ val, srcVal[val] });
-        if ( !srcKey[key].empty() )
-            mapped.insert({ val, srcKey[key] });
-    }
-
-    return mapped;
-}
+//po::options_description
+//config_options(const std::string& methodName, const po::options_description& commandLineOptions) {
+//    po::options_description cfgFileOptions( ("Config file " + methodName + " options").c_str() );
+//    for (std::size_t k = 0; k < commandLineOptions.options().size(); ++k) {
+//        cfgFileOptions.add_options()(
+//                (methodName + "." + commandLineOptions.options()[k]->long_name()).c_str(),
+//                commandLineOptions.options()[k]->semantic().get());
+//    }
+//    return cfgFileOptions;
+//}
+//
+//po::variables_map
+//map_variables(
+//        const std::unordered_map<std::string, std::string>&mapping,
+//        const po::variables_map& srcKey,
+//        const po::variables_map& srcVal) {
+//    po::variables_map mapped;
+//
+//    for (const auto& kv : mapping) {
+//        const auto& key = kv.first;
+//        const auto& val = kv.second;
+//        if ( !srcVal[val].empty() )
+//            mapped.insert({ val, srcVal[val] });
+//        if ( !srcKey[key].empty() )
+//            mapped.insert({ val, srcKey[key] });
+//    }
+//
+//    return mapped;
+//}
 
 void parse_options(int argc, char** argv) {
 
@@ -179,6 +180,7 @@ void work(const genetic_algorithm::cmn_ga::cmn_ga::parameters& params) {
     {
         using namespace io;
         std::cout << "Optimas number: " << optimas.size() << std::endl;
-        std::cout << optimas << std::endl;
+        for (const auto& optima : optimas)
+            std::cout <<::io::utility::vector_join(optima, ::io::separator::coma) << std::endl;
     }
 }

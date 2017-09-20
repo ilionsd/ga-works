@@ -12,7 +12,7 @@
 #include <bits/stl_function.h>
 #include <unordered_set>
 
-#include "../io/join.hpp"
+#include "../io/utility/vector_join.hpp"
 
 
 namespace domain {
@@ -35,7 +35,7 @@ struct set : public std::unary_function<T, bool> {
 
 template<typename T>
 std::ostream& operator<< (std::ostream& os, const set<T>& domain) {
-    os << "{ " << ::io::join<std::unordered_set<T>>()(domain.set, ", ") << " }";
+    os << "{ " << ::io::utility::join(domain.set, ", ") << " }";
     return os;
 }
 

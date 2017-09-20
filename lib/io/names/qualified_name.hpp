@@ -14,8 +14,8 @@
 #include <utility>
 #include <experimental/optional>
 
-#include "separator.hpp"
-#include "enclosure.hpp"
+#include "../separator.hpp"
+#include "../enclosure.hpp"
 
 
 namespace io {

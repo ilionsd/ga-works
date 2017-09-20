@@ -10,12 +10,12 @@
 
 
 #include <string>
+#include <ostream>
 
-#include "../../language/anybase_enum.hpp"
+#include "../language/anybase_enum.hpp"
 
 
 namespace io {
-namespace names {
 
 template<typename CharT>
 class basic_separator final :
@@ -29,16 +29,23 @@ public:
     friend
     ::language::add_value<self_type>;
 
+    using base_type::base_type;
+
     static const self_type space;
+    static const self_type coma;
     static const self_type dot;
     static const self_type colon;
     static const self_type doublecolon;
     static const self_type slash;
     static const self_type backslash;
+    static const self_type endline;
+    static const self_type tab;
 };
 
 template<typename CharT>
 const basic_separator<CharT> basic_separator<CharT>::space(" ");
+template<typename CharT>
+const basic_separator<CharT> basic_separator<CharT>::coma(",");
 template<typename CharT>
 const basic_separator<CharT> basic_separator<CharT>::dot(".");
 template<typename CharT>
@@ -49,11 +56,21 @@ template<typename CharT>
 const basic_separator<CharT> basic_separator<CharT>::slash("/");
 template<typename CharT>
 const basic_separator<CharT> basic_separator<CharT>::backslash("\\");
+template<typename CharT>
+const basic_separator<CharT> basic_separator<CharT>::endline("\n");
+template<typename CharT>
+const basic_separator<CharT> basic_separator<CharT>::tab("\t");
 
 using separator = basic_separator<char>;
 using wseparator = basic_separator<wchar_t>;
 
-}   //-- namespace names --
+template<typename CharT>
+std::basic_ostream<CharT>&
+operator<< (std::basic_ostream<CharT>& os, const basic_separator<CharT>& val) {
+    os << val.value();
+    return os;
+}
+
 }   //-- namespace io --
 
 

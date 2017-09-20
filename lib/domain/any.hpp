@@ -8,12 +8,12 @@
 #ifndef LIB_DOMAIN_ANY_HPP_
 #define LIB_DOMAIN_ANY_HPP_
 
+
 #include <limits>
 #include <ostream>
 #include <bits/stl_function.h>
 #include <functional>
 
-#include "exclude.hpp"
 
 namespace domain {
 
@@ -28,12 +28,6 @@ struct any : public std::unary_function<T, bool> {
 template<typename T>
 std::ostream& operator<< (std::ostream& os, const any<T>&) {
     os << "[ " << std::numeric_limits<T>::lowest() << " ; " << std::numeric_limits<T>::max() << " ]";
-    return os;
-}
-
-template<typename T>
-std::ostream& operator<< (std::ostream& os, const exclude<any<T>>&) {
-    os << "\\[ " << std::numeric_limits<T>::lowest() << " ; " << std::numeric_limits<T>::max() << " ]";
     return os;
 }
 

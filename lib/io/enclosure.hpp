@@ -10,13 +10,13 @@
 
 
 #include <string>
+#include <ostream>
 #include <utility>
 
-#include "../../language/anybase_enum.hpp"
+#include "../language/anybase_enum.hpp"
 
 
 namespace io {
-namespace names {
 
 template<typename CharT>
 class basic_enclosure final :
@@ -61,7 +61,13 @@ basic_enclosure<CharT>::square_braces ( std::make_pair("[", "]") );
 using enclosure = basic_enclosure<char>;
 using wenclosure = basic_enclosure<wchar_t>;
 
-}   //-- namespace names --
+template<typename CharT>
+std::basic_ostream<CharT>&
+operator<< (std::basic_ostream<CharT>& os, const basic_enclosure<CharT>& val) {
+    os << val.left() << val.right();
+    return os;
+}
+
 }   //-- namespace io --
 
 

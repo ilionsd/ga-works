@@ -13,8 +13,8 @@
 #include <vector>
 #include <experimental/optional>
 
-#include "../utility/join.hpp"
-#include "separator.hpp"
+#include "../utility/vector_join.hpp"
+#include "../separator.hpp"
 
 
 namespace io {
@@ -33,19 +33,50 @@ public:
 
     inline
     basic_complex_name() :
-            mSeparator(default_separator),
-            mName()
+        mSeparator(default_separator),
+        mName()
     {}
     inline
     basic_complex_name(const string_type& separator) :
-            mSeparator(separator),
-            mName()
+        mSeparator(separator),
+        mName()
     {}
     inline
     basic_complex_name(const self_type& other) :
-            mSeparator(other.mSeparator),
-            mName(other.mName)
+        mSeparator(other.mSeparator),
+        mName(other.mName)
     {}
+
+    inline
+    bool
+    operator== (const self_type& other) const {
+        return name() == other.name();
+    }
+    inline
+    bool
+    operator!= (const self_type& other) const {
+        return name() != other.name();
+    }
+    inline
+    bool
+    operator< (const self_type& other) const {
+        return name() < other.name();
+    }
+    inline
+    bool
+    operator> (const self_type& other) const {
+        return name() > other.name();
+    }
+    inline
+    bool
+    operator<= (const self_type& other) const {
+        return name() <= other.name();
+    }
+    inline
+    bool
+    operator>= (const self_type& other) const {
+        return name() >= other.name();
+    }
 
     inline
     const string_type&
@@ -63,7 +94,7 @@ public:
     const string_type&
     prefix() const {
         if (!mPrefix)
-            mPrefix = utility::join(name().cbegin(), --name().cend(), separator());
+            mPrefix = ::io::utility::vector_join(name().cbegin(), --name().cend(), separator());
         return mPrefix.value();
     }
     inline const string_type&
