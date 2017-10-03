@@ -10,9 +10,8 @@
 
 
 #include <string>
+#include <utility>
 
-#include "../../../io/enclosure.hpp"
-#include "../../../io/separator.hpp"
 #include "vector_join.hpp"
 
 
@@ -21,24 +20,22 @@ namespace io {
 namespace utility {
 
 template<typename CharT>
-struct basic_vector_to_string {
+struct vector_to_string {
     typedef CharT char_type;
     typedef std::basic_string<char_type> string_type;
     typedef std::basic_stringstream<char_type> stringstream_type;
-    typedef ::io::basic_separator<char_type> separator_type;
-    typedef ::io::basic_enclosure<char_type> enclosure_type;
-    typedef basic_join<char_type> join_type;
+    typedef vector_join<char_type> join_type;
 
     template<class Vector>
     auto operator() (
             const Vector& v,
-            enclosure_type enclosure = enclosure_type::curly_braces,
-            separator_type separator = separator_type::space) const
+            const std::pair<string_type, string_type>& enclosure,
+            const string_type& separator) const
     -> string_type {
         stringstream_type ss;
-        ss << enclosure.left();
+        ss << enclosure.first;
         ss << join_type()(v, separator);
-        ss << enclosure.right();
+        ss << enclosure.second;
         return ss.str();
     }
 
@@ -46,8 +43,8 @@ struct basic_vector_to_string {
     auto operator() (
             ForwardIterator begin,
             ForwardIterator end,
-            separator_type& separator = separator_type::space,
-            enclosure_type& enclosure = enclosure_type::curly_braces) const
+            const std::pair<string_type, string_type>& enclosure,
+            const string_type& separator) const
     -> string_type {
         stringstream_type ss;
         ss << enclosure.left();
@@ -55,11 +52,7 @@ struct basic_vector_to_string {
         ss << enclosure.right();
         return ss.str();
     }
-
 };
-
-using vector_to_string  = basic_vector_to_string<char>;
-using vector_to_wstring = basic_vector_to_string<wchar_t>;
 
 }   //-- namespace utility --
 }   //-- namespace io --

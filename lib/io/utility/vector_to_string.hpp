@@ -10,9 +10,8 @@
 
 #include <string>
 #include <sstream>
+#include <utility>
 
-#include "../separator.hpp"
-#include "../enclosure.hpp"
 #include "../../fn/io/utility/vector_to_string.hpp"
 
 
@@ -23,10 +22,10 @@ template<class Vector, typename CharT>
 inline
 auto vector_to_string(
         const Vector& v,
-        ::io::basic_enclosure<CharT> enclosure = ::io::basic_enclosure<CharT>::curly_braces,
-        ::io::basic_separator<CharT> separator = ::io::basic_separator<CharT>::space)
+        const std::pair<std::basic_string<CharT>, std::basic_string<CharT>>& enclosure,
+        const std::basic_string<CharT>& separator)
 -> std::basic_string<CharT> {
-    return ::fn::io::utility::basic_vector_to_string<CharT>()(v, enclosure, separator);
+    return ::fn::io::utility::vector_to_string<CharT>()(v, enclosure, separator);
 }
 
 template<class ForwardIterator, typename CharT>
@@ -34,10 +33,10 @@ inline
 auto vector_to_string(
         ForwardIterator begin,
         ForwardIterator end,
-        ::io::basic_enclosure<CharT> enclosure = ::io::basic_enclosure<CharT>::curly_braces,
-        ::io::basic_separator<CharT> separator = ::io::basic_separator<CharT>::space)
+        const std::pair<std::basic_string<CharT>, std::basic_string<CharT>>& enclosure,
+        const std::basic_string<CharT>& separator)
 -> std::basic_string<CharT> {
-    return ::fn::io::utility::basic_vector_to_string<CharT>()(begin, end, enclosure, separator);
+    return ::fn::io::utility::vector_to_string<CharT>()(begin, end, enclosure, separator);
 }
 
 }   //-- namespace utility --

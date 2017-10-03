@@ -20,7 +20,7 @@ namespace domain {
 template<typename T>
 struct any : public std::unary_function<T, bool> {
     typedef typename std::unary_function<T, bool>::argument_type argument_type;
-    inline constexpr bool operator() (const value_type) const {
+    inline constexpr bool operator() (const argument_type) const {
         return true;
     }
 };

@@ -52,7 +52,6 @@ PRIMITIVE_TYPES_TEMPLATE_SPEC(  real, long double )
 template<typename T>
 using real_t = typename real<T>::type;
 
-
 };
 
 

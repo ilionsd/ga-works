@@ -10,7 +10,7 @@
 
 
 #include <bits/stl_function.h>
-#include <unordered_set>
+#include <set>
 
 #include "../io/utility/vector_join.hpp"
 
@@ -23,19 +23,19 @@ struct set : public std::unary_function<T, bool> {
 
     template<typename... Ts>
     inline set(const Ts&&... args) :
-        set(std::forward(args)...)
+        set(std::forward<Ts>(args)...)
     {}
 
     inline bool operator() (const argument_type val) const {
         return (this->set.find(val) != this->set.cend());
     }
 
-    std::unordered_set<argument_type> set;
+    std::set<argument_type> set;
 };
 
 template<typename T>
 std::ostream& operator<< (std::ostream& os, const set<T>& domain) {
-    os << "{ " << ::io::utility::join(domain.set, ", ") << " }";
+    os << "{ " << ::io::utility::vector_join(domain.set, ", ") << " }";
     return os;
 }
 

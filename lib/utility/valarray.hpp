@@ -76,7 +76,7 @@ constexpr auto map(F f, const Expr& expr) {
 
 template<typename T>
 constexpr auto cumulative_sum(const std::valarray<T>& array) -> std::valarray<T> {
-    register T acc = 0;
+    T acc = 0;
     std::valarray<T> cumulativeSum (array.size());
     for (std::size_t k = 0; k < array.size(); ++k)
         cumulativeSum[k] = acc += array[k];
@@ -84,7 +84,7 @@ constexpr auto cumulative_sum(const std::valarray<T>& array) -> std::valarray<T>
 }
 template<class Clos, typename T>
 constexpr auto cumulative_sum(const expr_type<Clos, T>& expr) -> std::valarray<T> {
-    register T acc = 0;
+    T acc = 0;
     std::valarray<T> cumulativeSum (expr.size());
     for (std::size_t k = 0; k < expr.size(); ++k)
         cumulativeSum[k] = acc += expr[k];
@@ -95,14 +95,14 @@ constexpr auto cumulative_sum(const expr_type<Clos, T>& expr) -> std::valarray<T
 template<typename F, class Closure, typename T>
 constexpr auto reduce(F f, const expr_type<Closure, T>& expr) -> T {
     typedef T value_type;
-    register value_type acc = expr[0];
+    value_type acc = expr[0];
     for (std::size_t k = 1; k < expr.size(); ++k)
         acc = f(acc, expr[k]);
     return acc;
 }
 template< typename F, typename T>
 constexpr auto reduce(F f, const std::valarray<T>& array) -> T {
-    register T acc = array[0];
+    T acc = array[0];
     for (std::size_t k = 1; k < array.size(); ++k)
         acc = f(acc, array[k]);
     return acc;

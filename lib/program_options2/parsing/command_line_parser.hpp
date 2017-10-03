@@ -11,50 +11,49 @@
 
 #include <cstddef>
 #include <string>
+#include <set>
+#include <map>
 #include <vector>
-#include <unordered_map>
 
-#include "../definition/option.hpp"
+#include "../utility/compare.hpp"
+#include "../description/option.hpp"
 
 
 namespace program_options2 {
 namespace parsing {
 
 template<typename CharT>
-class basic_command_line_parser;
-
-template<typename CharT>
-auto parse_command_line(const basic_command_line_parser<CharT>&, std::size_t, CharT**);
-
-template<typename CharT>
 class basic_command_line_parser {
 public:
     typedef CharT char_type;
+    typedef ::program_options2::description::basic_option<char_type> option_type;
     typedef std::basic_string<char_type> string_type;
+    typedef std::set<option_type, utility::less<char_type>> set;
 
     inline
-    basic_command_line_parser()
+    basic_command_line_parser(set&& options) :
+        mOptions(options)
     {}
 
-    auto parse(const std::vector<string_type>& args) const -> int {
-        //std::map<>
-        return 0;
+    std::map<option_type, string_type>
+    operator() (const std::vector<string_type>& args) const {
+        std::map<option_type, string_type> map;
+        return map;
     }
 
 private:
-
+    set mOptions;
 };
 
-using command_line_parser = basic_command_line_parser<char>;
-using wcommand_line_parser = basic_command_line_parser<wchar_t>;
-
 template<typename CharT>
-auto parse_command_line(basic_command_line_parser<CharT>& parser, std::size_t argc, CharT** argv) -> int {
+std::map<description::basic_option<CharT>, std::basic_string<CharT>>
+parse_command_line(const basic_command_line_parser<CharT>& parser, std::size_t argc, CharT** argv) {
     typedef std::basic_string<CharT> string_type;
     std::vector<string_type> args;
     for (std::size_t k = 0; k < argc; ++k)
         args.push_back(argv[k]);
-    return parser.parse(args);
+
+    return parser(args);
 }
 
 }   //-- namespace parsing --

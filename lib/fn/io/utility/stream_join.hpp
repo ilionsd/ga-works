@@ -24,10 +24,9 @@ public:
     typedef basic_stream_join<char_type> self_type;
     typedef std::basic_ostringstream<char_type> stream_type;
     typedef std::basic_string<char_type> string_type;
-    typedef ::io::basic_separator<char_type> separator_type;
 
     inline
-    basic_stream_join(separator_type separator = separator_type::space) :
+    basic_stream_join(string_type&& separator) :
         mStream(),
         mSeparator(separator)
     {}
@@ -56,12 +55,9 @@ protected:
 
 private:
     bool mNotFirst = false;
-    separator_type mSeparator;
+    string_type mSeparator;
     stream_type mStream;
 };
-
-using ostream_join  = basic_stream_join<char>;
-using wostream_join = basic_stream_join<wchar_t>;
 
 }   //-- namespace utility --
 }   //-- namespace io --

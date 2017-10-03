@@ -10,9 +10,8 @@
 
 
 #include <string>
+#include <utility>
 
-#include "../separator.hpp"
-#include "../enclosure.hpp"
 #include "../../fn/io/utility/tuple_to_string.hpp"
 
 
@@ -23,10 +22,10 @@ template<class Tuple, typename CharT>
 inline
 auto tuple_to_string(
         const Tuple& t,
-        ::io::basic_enclosure<CharT> enclosure = ::io::basic_enclosure<CharT>::curly_braces,
-        ::io::basic_separator<CharT> separator = ::io::basic_separator<CharT>::space)
+        const std::pair<std::basic_string<CharT>, std::basic_string<CharT>>& enclosure,
+        const std::basic_string<CharT>& separator)
 -> std::basic_string<CharT> {
-    return ::fn::io::utility::basic_tuple_to_string<CharT>()(t, enclosure, separator);
+    return ::fn::io::utility::tuple_to_string<CharT>()(t, enclosure, separator);
 }
 
 }   //-- namespace utility --

@@ -26,51 +26,53 @@ template<typename CharT, typename... Ts>
 class basic_tuple_options_group {
 public:
     typedef CharT char_type;
-    typedef std::tuple<Ts> tuple_type;
+    typedef std::tuple<Ts...> tuple_type;
     typedef basic_tuple_options_group<char_type> self_type;
     typedef std::basic_string<char_type> string_type;
-    typedef basic_option<char_type> option_type;
 
     inline
     basic_tuple_options_group() :
-            mCaption(),
-            mChildren()
+        mCaption(),
+        mChildren()
     {}
     inline
-    basic_tuple_options_group(const string_type& caption) :
-            mCaption(caption),
-            mChildren()
+    basic_tuple_options_group(string_type&& caption) :
+        mCaption(caption),
+        mChildren()
     {}
     inline
-    basic_tuple_options_group(const string_type& caption, tuple_type&& children) :
-            mCaption(caption),
-            mChildren(std::move(children))
+    basic_tuple_options_group(string_type&& caption, tuple_type&& children) :
+        mCaption(caption),
+        mChildren(std::move(children))
     {}
 
+    template<typename CharT, class T>
     inline
     auto
-    add_option(const option_type& option) {
-        typedef basic_tuple_options_group<char_type, Ts, option_type> next_group;
-        return next_group( caption(), std::tuple_cat( children(), option ) );;
+    add_option(const basic_option<CharT, T>& option) {
+        typedef basic_tuple_options_group<char_type, Ts..., basic_option<CharT, T>> next_group;
+        return next_group( caption(), std::tuple_cat( children(), std::make_tuple(option) ) );
     }
 
     template<typename... otherTs>
     inline
     auto
-    add_group(const basic_tuple_options_group<char_type, otherTs>& group) {
-        typedef basic_tuple_options_group<char_type, otherTs> other_group;
-        typedef basic_tuple_options_group<char_type, Ts, other_group> next_group;
-        return next_group( caption(), std::tuple_cat( children(), group ) );
+    add_group(const basic_tuple_options_group<char_type, otherTs...>& group) {
+        typedef basic_tuple_options_group<char_type, otherTs...> other_group;
+        typedef basic_tuple_options_group<char_type, Ts..., other_group> next_group;
+        return next_group( caption(), std::tuple_cat( children(), std::make_tuple(group) ) );
     }
 
+    template<typename CharT, class T>
     inline
     auto
-    operator<< (const option_type& option) {
+    operator<< (const basic_option<CharT, T>& option) {
         return add_option(option);
     }
+    template<typename... otherTs>
     inline
     auto
-    operator<< (const self_type& group) {
+    operator<< (const basic_tuple_options_group<char_type, otherTs...>& group) {
         return add_group(group);
     }
 

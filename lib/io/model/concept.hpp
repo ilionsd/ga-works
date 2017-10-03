@@ -11,32 +11,37 @@
 
 #include <istream>
 #include <ostream>
+#include <memory>
+#include <type_traits>
+
+#include "../../type_traits/is_base_of_any.hpp"
 
 
 namespace io {
 namespace model {
 
 template<typename CharT>
-struct concept {
+struct basic_concept {
     typedef CharT char_type;
     typedef std::basic_istream<char_type> istream_type;
     typedef std::basic_ostream<char_type> ostream_type;
 
-    virtual ~concept() = default;
+    virtual ~basic_concept() = default;
 
     virtual void write(ostream_type& os) const = 0;
     virtual void read (istream_type& is) = 0;
-    virtual bool validate() const = 0;
 };
 
 template<typename CharT>
-std::basic_istream<CharT>& operator>> (std::basic_istream<CharT>& is, const concept<CharT>& c) {
+std::basic_istream<CharT>&
+operator>> (std::basic_istream<CharT>& is, const basic_concept<CharT>& c) {
     c.read(is);
     return is;
 }
 
 template<typename CharT>
-std::basic_ostream<CharT>& operator<< (std::basic_ostream<CharT>& os, const concept<CharT>& c) {
+std::basic_ostream<CharT>&
+operator<< (std::basic_ostream<CharT>& os, const basic_concept<CharT>& c) {
     c.write(os);
     return os;
 }

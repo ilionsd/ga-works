@@ -12,7 +12,7 @@
 #include <string>
 #include <sstream>
 #include <utility>
-#include <experimental/optional>
+#include <optional>
 
 #include "../separator.hpp"
 #include "../enclosure.hpp"
@@ -164,8 +164,8 @@ private:
     xmlns_type mNS;
     string_type mShortName;
 
-    mutable std::experimental::optional<string_type> mQName;
-    mutable std::experimental::optional<string_type> mFullName;
+    mutable std::optional<string_type> mQName;
+    mutable std::optional<string_type> mFullName;
 };
 
 template<typename CharT>
@@ -175,12 +175,6 @@ basic_qualified_name<CharT>::default_enclosure = basic_qualified_name<CharT>::en
 template<typename CharT>
 const typename basic_qualified_name<CharT>::separator_type
 basic_qualified_name<CharT>::default_separator = basic_qualified_name<CharT>::separator_type::doublecolon;
-
-using xmlns  = basic_xmlns<char>;
-using wxmlns = basic_xmlns<wchar_t>;
-
-using qualified_name  = basic_qualified_name<char>;
-using wqualified_name = basic_qualified_name<wchar_t>;
 
 }   //-- namespace names --
 }   //-- namespace io --

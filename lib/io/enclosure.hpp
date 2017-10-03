@@ -28,24 +28,30 @@ public:
     typedef std::basic_string<char_type> string_type;
     typedef basic_enclosure<char_type> self_type;
     typedef ::language::anybase_enum<std::pair<string_type, string_type>, self_type> base_type;
+    typedef typename base_type::underlying_type underlying_type;
 
     friend
     ::language::add_value<self_type>;
 
-    static const self_type curly_braces;
-    static const self_type round_braces;
-    static const self_type square_braces;
+    inline
+    operator underlying_type() const {
+        return this->value();
+    }
 
     inline
     const string_type&
     left() const {
-        return value().first;
+        return this->value().first;
     }
     inline
     const string_type&
     right() const {
-        return value().second;
+        return this->value().second;
     }
+
+    static const self_type curly_braces;
+    static const self_type round_braces;
+    static const self_type square_braces;
 };
 
 template<typename CharT>
@@ -57,9 +63,6 @@ basic_enclosure<CharT>::round_braces ( std::make_pair("(", ")") );
 template<typename CharT>
 const basic_enclosure<CharT>
 basic_enclosure<CharT>::square_braces ( std::make_pair("[", "]") );
-
-using enclosure = basic_enclosure<char>;
-using wenclosure = basic_enclosure<wchar_t>;
 
 template<typename CharT>
 std::basic_ostream<CharT>&

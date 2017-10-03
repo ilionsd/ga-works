@@ -13,7 +13,6 @@
 #include <sstream>
 #include <tuple>
 
-#include "../../../io/separator.hpp"
 #include "../../../tuple/for_each.hpp"
 #include "stream_join.hpp"
 #include "stream_wrapper.hpp"
@@ -24,26 +23,22 @@ namespace io {
 namespace utility {
 
 template<typename CharT>
-struct basic_tuple_join {
+struct tuple_join {
     typedef CharT char_type;
     typedef std::basic_string<char_type> string_type;
     typedef std::basic_ostringstream<char_type> ostringstream_type;
     typedef basic_stream_join<char_type> joiner_type;
-    typedef ::io::basic_separator<char_type> separator_type;
 
     template<class Tuple>
     string_type
     operator() (
             const Tuple& t,
-            const separator_type& separator = separator_type::space) const {
+            const string_type& separator) const {
         ostream_wrapper<joiner_type> joiner(separator);
         ::tuple::for_each(joiner, t);
         return joiner.get().str();
     }
 };
-
-using tuple_join  = basic_tuple_join<char>;
-using tuple_wjoin = basic_tuple_join<wchar_t>;
 
 }   //-- namespace utility --
 }   //-- namespace io --

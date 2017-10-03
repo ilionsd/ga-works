@@ -12,7 +12,6 @@
 #include <string>
 #include <sstream>
 
-#include "../separator.hpp"
 #include "../../fn/io/utility/tuple_join.hpp"
 
 
@@ -23,9 +22,9 @@ template<class Tuple, typename CharT>
 inline
 auto tuple_join(
         const Tuple& t,
-        const ::io::basic_separator<CharT> separator = ::io::basic_separator<CharT>::space)
+        const std::basic_string<CharT>& separator)
 -> std::basic_string<CharT> {
-    return ::fn::io::utility::basic_tuple_join<CharT>()(t, separator);
+    return ::fn::io::utility::tuple_join<CharT>()(t, separator);
 }
 
 }   //-- namespace utility --

@@ -16,28 +16,23 @@
 #include <string>
 #include <unordered_map>
 
-//#include <boost/program_options.hpp>
-
 #include "../include/fn/math.hpp"
+#include "../include/io/io.hpp"
+#include "../include/program_options2/description.hpp"
+#include "../include/program_options2/parsing.hpp"
 #include "../lib/utility/valarray.hpp"
-#include "../lib/io/separator.hpp"
 #include "../lib/io/utility/vector_join.hpp"
 #include "../lib/genetic_algorithm/common/space.hpp"
 #include "../lib/genetic_algorithm/cmn_ga/cmn_ga.hpp"
-#include "../lib/program_options2/parsing/command_line_parser.hpp"
 
+#include "options2/general.hpp"
 
 #include "../test/test.hpp"
-
-
-//namespace po = ::boost::program_options;
 
 
 constexpr double version = 0.15;
 
 
-//po::options_description
-//config_options(const std::string&, const po::options_description&);
 void work(const genetic_algorithm::cmn_ga::cmn_ga::parameters&);
 void parse_options(int argc, char** argv);
 
@@ -45,88 +40,16 @@ auto main(int argc, char* argv[]) -> int {
 
     ::test::testing();
 
-    ::program_options2::parsing::command_line_parser p;
-    ::program_options2::parsing::parse_command_line(p, argc, argv);
+    using ::program_options2::description::options_group;
+    options_group general("General Options");
+    general << options2::common::group
+            << options2::io::group
+            << options2::algorithm::group;
+
+    ::program_options2::parsing::command_line_parser parser(::program_options2::description::options(general));
+    ::program_options2::parsing::parse_command_line(parser, static_cast<std::size_t>(argc), argv);
 
     return 0;
-}
-
-//po::options_description
-//config_options(const std::string& methodName, const po::options_description& commandLineOptions) {
-//    po::options_description cfgFileOptions( ("Config file " + methodName + " options").c_str() );
-//    for (std::size_t k = 0; k < commandLineOptions.options().size(); ++k) {
-//        cfgFileOptions.add_options()(
-//                (methodName + "." + commandLineOptions.options()[k]->long_name()).c_str(),
-//                commandLineOptions.options()[k]->semantic().get());
-//    }
-//    return cfgFileOptions;
-//}
-//
-//po::variables_map
-//map_variables(
-//        const std::unordered_map<std::string, std::string>&mapping,
-//        const po::variables_map& srcKey,
-//        const po::variables_map& srcVal) {
-//    po::variables_map mapped;
-//
-//    for (const auto& kv : mapping) {
-//        const auto& key = kv.first;
-//        const auto& val = kv.second;
-//        if ( !srcVal[val].empty() )
-//            mapped.insert({ val, srcVal[val] });
-//        if ( !srcKey[key].empty() )
-//            mapped.insert({ val, srcKey[key] });
-//    }
-//
-//    return mapped;
-//}
-
-void parse_options(int argc, char** argv) {
-
-//    auto allowed = po::options_description("Allowed options")
-//        .add(options::description::general)
-//        .add(options::description::io)
-//        .add(options::description::algorithm)
-//        .add(options::description::ga)
-//        .add(options::description::cmnga);
-//
-//    auto positional = po::positional_options_description()
-//        .add(options::algorithm::method.c_str(), 1);
-//
-//    po::variables_map vm;
-//    po::store(po::command_line_parser(argc, argv).options(allowed).positional(positional).run(), vm);
-//    po::notify(vm);
-//
-//    using std::cout;
-//    using std::endl;
-//    if ( vm.count(options::general::version) )
-//        cout << "Genetic algorithm optimizing program GA-Works. v" << version << endl;
-//    else {
-//        if ( vm.count(options::algorithm::method) ) {
-//            std::string methodName = vm[options::algorithm::method].as<std::string>();
-//            if ( vm.count(options::general::help) ) {
-//                cout << "cmn_ga-rework " + methodName + " [" + methodName + " OPTIONS]" << endl;
-//                cout << "There will be method help soon..." << endl;
-//            }
-//            else {
-//                genetic_algorithm::cmn_ga::cmn_ga::parameters params;
-//                if ( vm.count(options::io::input) ) {
-//                    /*
-//                     * To Do
-//                     * Read config file to get method arguments --
-//                     * and merge with arguments that may be passed from console.
-//                     */
-//                }
-//            }
-//        }
-//        else if ( vm.count(options::general::help) ) {
-//            cout << "cmn_ga-rework <METHOD> [OTHER OPTIONS]" << endl;
-//            cout << options::description::general << endl;
-//            cout << options::description::io << endl;
-//            cout << options::description::algorithm << endl;
-//        }
-//    }
-
 }
 
 void work(const genetic_algorithm::cmn_ga::cmn_ga::parameters& params) {
@@ -179,8 +102,9 @@ void work(const genetic_algorithm::cmn_ga::cmn_ga::parameters& params) {
     auto optimas = alg();
     {
         using namespace io;
+        using namespace std::string_literals;
         std::cout << "Optimas number: " << optimas.size() << std::endl;
         for (const auto& optima : optimas)
-            std::cout <<::io::utility::vector_join(optima, ::io::separator::coma) << std::endl;
+            std::cout << ::io::utility::vector_join(optima, static_cast<std::string>(separator::coma)) << std::endl;
     }
 }

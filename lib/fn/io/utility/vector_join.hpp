@@ -12,24 +12,21 @@
 #include <string>
 #include <sstream>
 
-#include "../../../io/separator.hpp"
-
 
 namespace fn {
 namespace io {
 namespace utility {
 
 template<typename CharT>
-struct basic_vector_join {
+struct vector_join {
     typedef CharT char_type;
     typedef std::basic_string<char_type> string_type;
     typedef std::basic_stringstream<char_type> stringstream_type;
-    typedef ::io::basic_separator<char_type> separator_type;
 
     template<class Vector>
     auto operator() (
             const Vector& v,
-            separator_type separator = separator_type::space) const
+            const string_type& separator) const
     -> string_type {
         stringstream_type ss;
         bool first = true;
@@ -46,7 +43,7 @@ struct basic_vector_join {
     auto operator() (
             ForwardIterator begin,
             ForwardIterator end,
-            separator_type separator = separator_type::space) const
+            const string_type& separator) const
     -> string_type {
         stringstream_type ss;
         bool first = true;
@@ -60,9 +57,6 @@ struct basic_vector_join {
     }
 
 };
-
-using join  = basic_vector_join<char>;
-using wjoin = basic_vector_join<wchar_t>;
 
 }   //-- namespace utility --
 }   //-- namespace io --

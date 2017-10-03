@@ -17,10 +17,17 @@ namespace fn {
 namespace io {
 namespace utility {
 
-template<typename CharT>
-struct basic_join;
-template<typename CharT>
-struct basic_vector_to_string;
+template<class IS> class istream_wrapper;
+template<class OS> class ostream_wrapper;
+
+template<typename CharT> class basic_stream_join;
+using stream_join  = basic_stream_join<char>;
+using wstream_join = basic_stream_join<wchar_t>;
+
+template<typename CharT> struct vector_join;
+template<typename CharT> struct vector_to_string;
+template<typename CharT> struct tuple_join;
+template<typename CharT> struct tuple_to_string;
 
 }   //-- namespace utility --
 }   //-- namespace io --

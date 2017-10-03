@@ -25,11 +25,17 @@ public:
     typedef std::basic_string<char_type> string_type;
     typedef basic_separator<char_type> self_type;
     typedef ::language::anybase_enum<string_type, self_type> base_type;
+    typedef typename base_type::underlying_type underlying_type;
 
     friend
     ::language::add_value<self_type>;
 
     using base_type::base_type;
+
+    inline
+    operator underlying_type() const {
+        return this->value();
+    }
 
     static const self_type space;
     static const self_type coma;
@@ -60,9 +66,6 @@ template<typename CharT>
 const basic_separator<CharT> basic_separator<CharT>::endline("\n");
 template<typename CharT>
 const basic_separator<CharT> basic_separator<CharT>::tab("\t");
-
-using separator = basic_separator<char>;
-using wseparator = basic_separator<wchar_t>;
 
 template<typename CharT>
 std::basic_ostream<CharT>&

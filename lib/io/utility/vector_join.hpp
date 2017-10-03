@@ -12,7 +12,6 @@
 #include <string>
 #include <sstream>
 
-#include "../separator.hpp"
 #include "../../fn/io/utility/vector_join.hpp"
 
 
@@ -23,9 +22,9 @@ template<class Vector, typename CharT>
 inline
 auto vector_join(
         const Vector& v,
-        ::io::basic_separator<CharT> separator = ::io::basic_separator<CharT>::space)
+        const std::basic_string<CharT>& separator)
 -> std::basic_string<CharT> {
-    return ::fn::io::utility::basic_vector_join<CharT>()(v, separator);
+    return ::fn::io::utility::vector_join<CharT>()(v, separator);
 }
 
 template<class ForwardIterator, typename CharT>
@@ -33,9 +32,9 @@ inline
 auto vector_join(
         ForwardIterator begin,
         ForwardIterator end,
-        ::io::basic_separator<CharT> separator = ::io::basic_separator<CharT>::space)
+        const std::basic_string<CharT>& separator)
 -> std::basic_string<CharT> {
-    return ::fn::io::utility::basic_vector_join<CharT>()(begin, end, separator);
+    return ::fn::io::utility::vector_join<CharT>()(begin, end, separator);
 }
 
 }   //-- namespace utility --

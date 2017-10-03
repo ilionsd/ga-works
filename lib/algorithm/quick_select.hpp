@@ -72,8 +72,8 @@ struct quick_select {
             const size_type left,
             const size_type right,
             const size_type pivot) const {
-        register value_type pivotValue = vec[transpositions[pivot]];
-        register size_type stored = left;
+        value_type pivotValue = vec[transpositions[pivot]];
+        size_type stored = left;
         std::swap(transpositions[pivot], transpositions[right]);
         for (size_type k = left; k < right; ++k)
             if (vec[transpositions[k]] < pivotValue)

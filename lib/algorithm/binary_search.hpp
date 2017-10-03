@@ -21,7 +21,7 @@ struct binary_search {
 
     template<typename V>
     constexpr size_type operator() (const V& vec, const value_type val) const {
-        register size_type left = 0, right = vec.size() - 1, middle = 0;
+        size_type left = 0, right = vec.size() - 1, middle = 0;
         while (left < right) {
             middle = left + (right - left) / 2;
             if (vec[middle] < val && val <= vec[middle + 1])
