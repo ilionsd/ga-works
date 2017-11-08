@@ -23,6 +23,22 @@ struct basic_names {
     typedef std::basic_string<char_type> string_type;
 
     inline
+    basic_names() :
+        name(name),
+        shortname(shortname)
+    {}
+    inline
+    basic_names(std::basic_string_view<char_type> name) :
+        name(name),
+        shortname(shortname)
+    {}
+    inline
+    basic_names(std::basic_string_view<char_type> name, std::basic_string_view<char_type> shortname) :
+        name(name),
+        shortname(shortname)
+    {}
+
+    inline
     const auto
     as_tuple() const {
         return std::tie(name, shortname);

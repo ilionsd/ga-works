@@ -15,7 +15,7 @@
 
 #ifndef ORDERING_INTEGRAL_TYPE_DEFINITION
 #define ORDERING_INTEGRAL_TYPE_DEFINITION( TYPE ) \
-inline int order(TYPE a, TYPE b) {                       \
+inline int order(TYPE a, TYPE b) {                \
     return static_cast<int>(a - b);               \
 }
 #endif

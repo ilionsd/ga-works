@@ -14,18 +14,16 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 
 #include "../include/fn/math.hpp"
 #include "../include/io/io.hpp"
+#include "../include/io/names.hpp"
 #include "../include/program_options2/description.hpp"
 #include "../include/program_options2/parsing.hpp"
 #include "../lib/utility/valarray.hpp"
 #include "../lib/io/utility/vector_join.hpp"
 #include "../lib/genetic_algorithm/common/space.hpp"
 #include "../lib/genetic_algorithm/cmn_ga/cmn_ga.hpp"
-
-#include "options2/general.hpp"
 
 #include "../test/test.hpp"
 
@@ -34,17 +32,25 @@ constexpr double version = 0.15;
 
 
 void work(const genetic_algorithm::cmn_ga::cmn_ga::parameters&);
-void parse_options(int argc, char** argv);
 
 auto main(int argc, char* argv[]) -> int {
 
     ::test::testing();
 
+    using ::io::names::root;
+    using ::io::names::path;
+    using ::io::names::names;
+    using ::program_options2::description::option;
     using ::program_options2::description::options_group;
+    option<void> help;
+    help.names() << names("help", "h");
+    help.description() << "Produce help message";
+    option<void> version;
+    version.names() << names("version", "v");
+    version.description() << "Prints program version";
+
     options_group general("General Options");
-    general << options2::common::group
-            << options2::io::group
-            << options2::algorithm::group;
+    general << help << version;
 
     ::program_options2::parsing::command_line_parser parser(::program_options2::description::options(general));
     ::program_options2::parsing::parse_command_line(parser, static_cast<std::size_t>(argc), argv);

@@ -1,7 +1,7 @@
 /*
  * option.hpp
  *
- *  Created on: Sep 7, 2017
+ *  Created on: Nov 3, 2017
  *      Author: ilion
  */
 
@@ -9,113 +9,191 @@
 #define LIB_PROGRAM_OPTIONS2_DESCRIPTION_OPTION_HPP_
 
 
+#include <memory>
 #include <string>
-#include <ostream>
 #include <sstream>
-#include <functional>
 
 #include "../../io/names/complex_names.hpp"
+#include "../../io/model/concept.hpp"
+#include "../../io/model/model.hpp"
+#include "base_option.hpp"
 
 
 namespace program_options2 {
 namespace description {
 
-template<typename CharT>
-class basic_option {
+template<typename CharT, typename T = void>
+class basic_option : public base_option<CharT> {
 public:
     typedef CharT char_type;
-    typedef basic_option<char_type> self_type;
-    typedef ::io::names::basic_complex_names<char_type> names_type;
-    typedef std::basic_string<char_type> string_type;
-    typedef std::basic_stringstream<char_type> stringstream_type;
-    typedef std::basic_ostringstream<char_type> ostringstream_type;
+    typedef T value_type;
+    typedef base_option<char_type> base_type;
+    typedef typename base_type::stringview_type stringview_type;
+    typedef typename base_type::stringstream_type stringstream_type;
+    typedef typename base_type::names_type names_type;
+    typedef typename base_type::concept_type concept_type;
+    typedef ::io::model::basic_model<char_type, value_type> model_type;
 
     inline
     basic_option() :
-        mNames(),
-        mDescription(),
-        mHasValue(false)
+        base_type(),
+        mModelPtr()
     {}
     inline
-    basic_option(names_type&& name) :
-        mNames(name),
-        mDescription(),
-        mHasValue(false)
+    basic_option(const names_type& names) :
+        base_type(names),
+        mModelPtr()
     {}
     inline
-    basic_option(names_type&& name, string_type&& description) :
-        mNames(name),
-        mDescription(description),
-        mHasValue(false)
+    basic_option(const names_type& names, const stringview_type& description) :
+        base_type(names, description),
+        mModelPtr()
     {}
     inline
-    basic_option(names_type&& name, string_type&& description, bool hasValue) :
-        mNames(name),
-        mDescription(description),
-        mHasValue(hasValue)
+    basic_option(const names_type& names, const stringview_type& description, const std::shared_ptr<model_type>& modelPtr) :
+        base_type(names, description),
+        mModelPtr(modelPtr)
     {}
-
     inline
-    basic_option(const self_type& other) :
-        mNames(other.mNames),
-        mDescription(other.mDescription.str()),
-        mHasValue(other.mHasValue)
+    basic_option(const basic_option<char_type, value_type>& other) :
+        base_type(other),
+        mModelPtr(other.mModelPtr)
     {}
-
     inline
-    self_type&
-    operator= (const self_type& other) {
-        mNames  = other.mNames;
-        mDescription.str(other.mDescription.str());
-        mHasValue = other.mHasValue;
+    basic_option(basic_option<char_type, value_type>&& other) :
+        base_type(other),
+        mModelPtr(std::move(other.mModelPtr))
+    {}
+    inline
+    basic_option<char_type, value_type>&
+    operator= (const basic_option<char_type, value_type>& other) {
+        base_type::operator =(other);
+        mModelPtr = other.mModelPtr;
+        return *this;
+    }
+    inline
+    basic_option<char_type, value_type>&
+    operator= (basic_option<char_type, value_type>&& other) {
+        base_type::operator =(other);
+        mModelPtr = std::move(other.mModelPtr);
         return *this;
     }
 
-    inline
-    const names_type&
-    names() const {
-        return mNames;
-    }
-    inline
-    names_type&
-    names() {
-        return mNames;
+    virtual ~basic_option() override = default;
+
+    inline virtual
+    operator bool() const override {
+        return bool(mModelPtr);
     }
 
     inline
-    const bool
-    has_value() const {
-        return mHasValue;
+    const std::shared_ptr<model_type>&
+    model() const {
+        return mModelPtr;
     }
     inline
-    bool&
-    has_value() {
-        return mHasValue;
+    std::shared_ptr<model_type>&
+    model() {
+        return mModelPtr;
     }
 
-    inline
-    const ostringstream_type&
-    description() const {
-        return mDescription;
+    inline virtual
+    const std::shared_ptr<concept_type>
+    concept() const override {
+        return std::static_pointer_cast<concept_type>(mModelPtr);
     }
-    inline
-    ostringstream_type&
-    description() {
-        return mDescription;
+    inline virtual
+    std::shared_ptr<concept_type>
+    concept() override {
+        return std::static_pointer_cast<concept_type>(mModelPtr);
     }
 
 private:
-    names_type mNames;
-    stringstream_type mDescription;
-    bool mHasValue;
+    std::shared_ptr<model_type> mModelPtr;
 };
 
 template<typename CharT>
-std::basic_ostream<CharT>&
-operator<< (std::basic_ostream<CharT>& os, const basic_option<CharT>& option) {
-    os << "\t" << option.format_short_name() << "," << option.format_full_name() << " :\t" << option.description();
-    return os;
-}
+class basic_option<CharT, void> : public base_option<CharT> {
+public:
+    typedef CharT char_type;
+    typedef void value_type;
+    typedef base_option<char_type> base_type;
+    typedef typename base_type::stringview_type stringview_type;
+    typedef typename base_type::stringstream_type stringstream_type;
+    typedef typename base_type::names_type names_type;
+    typedef typename base_type::concept_type concept_type;
+    typedef ::io::model::basic_model<char_type, value_type> model_type;
+
+    inline
+    basic_option() :
+        base_type(),
+        mModelPtr()
+    {}
+    inline
+    basic_option(const names_type& names) :
+        base_type(names),
+        mModelPtr()
+    {}
+    inline
+    basic_option(const names_type& names, const stringview_type& description) :
+        base_type(names, description),
+        mModelPtr()
+    {}
+    inline
+    basic_option(const basic_option<char_type, void>& other) :
+        base_type(other),
+        mModelPtr()
+    {}
+    inline
+    basic_option(basic_option<char_type, void>&& other) :
+        base_type(other),
+        mModelPtr()
+    {}
+    inline
+    basic_option<char_type, void>&
+    operator= (const basic_option<char_type, void>& other) {
+        base_type::operator =(other);
+        return *this;
+    }
+    inline
+    basic_option<char_type, void>&
+    operator= (basic_option<char_type, void>&& other) {
+        base_type::operator =(other);
+        return *this;
+    }
+
+    virtual ~basic_option() override = default;
+
+    inline virtual
+    operator bool() const override {
+        return bool(mModelPtr);
+    }
+
+    inline
+    const std::shared_ptr<model_type>&
+    model() const {
+        return mModelPtr;
+    }
+    inline
+    std::shared_ptr<model_type>&
+    model() {
+        return mModelPtr;
+    }
+
+    inline virtual
+    const std::shared_ptr<concept_type>
+    concept() const override {
+        return std::static_pointer_cast<concept_type>(mModelPtr);
+    }
+    inline virtual
+    std::shared_ptr<concept_type>
+    concept() override {
+        return std::static_pointer_cast<concept_type>(mModelPtr);
+    }
+
+private:
+    std::shared_ptr<model_type> mModelPtr;
+};
 
 }   //-- namespace description --
 }   //-- namespace program_options2 --

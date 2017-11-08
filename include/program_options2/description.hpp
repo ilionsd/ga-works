@@ -16,9 +16,9 @@
 namespace program_options2 {
 namespace description {
 
-template<typename CharT> class basic_option;
-using  option = basic_option<char>;
-using woption = basic_option<wchar_t>;
+template<typename CharT, typename T> class basic_option;
+template<typename T = void> using  option = basic_option<char, T>;
+template<typename T = void> using woption = basic_option<wchar_t, T>;
 
 template<typename CharT> class basic_options_group;
 using  options_group = basic_options_group<char>;

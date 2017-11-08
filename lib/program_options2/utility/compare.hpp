@@ -12,7 +12,7 @@
 #include <bits/stl_function.h>
 
 #include "../../io/utility/order.hpp"
-#include "../description/option.hpp"
+#include "../description/base_option.hpp"
 
 
 #ifndef PROGRAM_OPTIONS2_UTILITY_COMPARE_TEMPLATE_SPEC
@@ -20,11 +20,11 @@
 template<typename CharT>                                                      \
 struct NAME :                                                                 \
         public std::binary_function<                                          \
-                    description::basic_option<CharT>,                         \
-                    description::basic_option<CharT>,                         \
+                    description::base_option<CharT>,                          \
+                    description::base_option<CharT>,                          \
                     bool> {                                                   \
     typedef CharT char_type;                                                  \
-    typedef description::basic_option<char_type> option_type;                 \
+    typedef description::base_option<char_type> option_type;                  \
     inline                                                                    \
     bool                                                                      \
     operator() (                                                              \

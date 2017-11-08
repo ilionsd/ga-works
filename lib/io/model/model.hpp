@@ -80,11 +80,14 @@ public:
     validator() {
         return mValidator;
     }
-
-    virtual void write(ostream_type& os) const override {
+    inline virtual
+    void
+    write(ostream_type& os) const override {
         os << value();
     }
-    virtual void  read(istream_type& is) override {
+    inline virtual
+    void
+    read(istream_type& is) override {
         is >> value();
     }
 
@@ -103,6 +106,30 @@ private:
     std::optional<value_type> mValue;
     std::optional<value_type> mDefault;
     std::optional<validator_type> mValidator;
+};
+
+template<typename CharT>
+class basic_model<CharT, void> final : public basic_concept<CharT> {
+public:
+    typedef CharT char_type;
+    typedef void value_type;
+    typedef basic_model<char_type, value_type> self_type;
+    typedef basic_concept<char_type> base_type;
+    typedef typename base_type::istream_type istream_type;
+    typedef typename base_type::ostream_type ostream_type;
+
+    virtual ~basic_model() override = default;
+
+    inline virtual
+    void
+    write(ostream_type& os) const override {
+        return;
+    }
+    inline virtual
+    void
+    read(istream_type& is) override {
+        return;
+    }
 };
 
 }   //-- namespace model --
