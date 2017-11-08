@@ -42,15 +42,92 @@ auto main(int argc, char* argv[]) -> int {
     using ::io::names::names;
     using ::program_options2::description::option;
     using ::program_options2::description::options_group;
+
+    //-- General Options --
     option<void> help;
     help.names() << names("help", "h");
     help.description() << "Produce help message";
+
     option<void> version;
     version.names() << names("version", "v");
     version.description() << "Prints program version";
 
+    option<std::string> input;
+    input.names() << names("input", "i");
+    input.description() << "Input file name";
+
+    option<std::string> output;
+    output.names() << names("output", "o");
+    output.description() << "Output file name";
+
+    //-- GA Options --
+    option<std::size_t> gaMaxSize;
+    gaMaxSize.names() << path().add("ga") << names("max-size");
+    gaMaxSize.description() << "Population max size";
+
+    option<std::size_t> gaInitialSize;
+    gaInitialSize.names() << path().add("ga") << names("initial-size");
+    gaInitialSize.description() << "Population initial size";
+
+    option<std::size_t> gaCrossover;
+    gaCrossover.names() << path().add("ga") << names("crossover");
+    gaCrossover.description() << "Number of crossover pairs in population";
+
+    option<std::size_t> gaMutation;
+    gaMutation.names() << path().add("ga") << names("mutation");
+    gaMutation.description() << "Number of mutated individuals in population";
+
+    //-- CMN-GA Options --
+    option<std::size_t> cmngaMaxSize;
+    cmngaMaxSize.names() << path().add("cmn-ga") << names("max-size");
+    cmngaMaxSize.description() << "Population max size";
+
+    option<std::size_t> cmngaInitialSize;
+    cmngaInitialSize.names() << path().add("cmn-ga") << names("initial-size");
+    cmngaInitialSize.description() << "Population initial size";
+
+    option<std::size_t> cmngaCrossover;
+    cmngaCrossover.names() << path().add("cmn-ga") << names("crossover");
+    cmngaCrossover.description() << "Number of crossover pairs in population";
+
+    option<std::size_t> cmngaMutation;
+    cmngaMutation.names() << path().add("cmn-ga") << names("mutation");
+    cmngaMutation.description() << "Number of mutated individuals in population";
+
+    option<std::size_t> cmngaNearest;
+    cmngaNearest.names() << path().add("cmn-ga") << names("nearest");
+    cmngaNearest.description() << "Number of nearest individuals individual must be more fit to be local optima";
+
+    option<std::size_t> cmngaCrowd;
+    cmngaCrowd.names() << path().add("cmn-ga") << names("crowd");
+    cmngaCrowd.description() << "Number of individuals to choose from for mating for crossover";
+
+    option<std::size_t> cmngaCrossoverTries;
+    cmngaCrossoverTries.names() << path().add("cmn-ga") << names("crossover-tries");
+    cmngaCrossoverTries.description() << "Number of tries to perform all crossovers";
+
+    option<std::size_t> cmngaMutationTries;
+    cmngaMutationTries.names() << path().add("cmn-ga") << names("mutation-tries");
+    cmngaMutationTries.description() << "Number of tries to perform all mutations";
+
+
+    options_group io("I/O Options");
+    io << input << output;
+
     options_group general("General Options");
-    general << help << version;
+    general << help << version << io;
+
+    options_group ga("GA Options");
+    ga << gaMaxSize << gaInitialSize << gaCrossover << gaMutation;
+
+    options_group cmnga("CMN-GA Options");
+    cmnga << cmngaMaxSize << cmngaInitialSize
+            << cmngaCrossover << cmngaMutation
+            << cmngaNearest << cmngaCrowd
+            << cmngaCrossoverTries << cmngaMutationTries;
+
+    options_group allowed("Allowed Options");
+    allowed << general << ga << cmnga;
 
     ::program_options2::parsing::command_line_parser parser(::program_options2::description::options(general));
     ::program_options2::parsing::parse_command_line(parser, static_cast<std::size_t>(argc), argv);
