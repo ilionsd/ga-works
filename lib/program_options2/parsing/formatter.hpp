@@ -23,7 +23,7 @@ struct basic_name_formatter {
     inline
     string_type
     operator() (const string_type& name) const {
-        return "--" + name;
+        return string_type("--") + name;
     }
 
 };
@@ -36,7 +36,7 @@ struct basic_shortname_formatter {
     inline
     string_type
     operator() (const string_type& name) const {
-        return "-" + name;
+        return string_type("-") + name;
     }
 
 };

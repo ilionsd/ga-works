@@ -60,6 +60,15 @@ auto main(int argc, char* argv[]) -> int {
     output.names() << names("output", "o");
     output.description() << "Output file name";
 
+    //-- Method Options --
+    option<std::string> method;
+    method.names() << names("method", "m");
+    method.description() << "Method name";
+
+    option<double> precision;
+    precision.names() << names("precision", "p");
+    precision.description() << "Precision";
+
     //-- GA Options --
     option<std::size_t> gaMaxSize;
     gaMaxSize.names() << path().add("ga") << names("max-size");
@@ -115,7 +124,7 @@ auto main(int argc, char* argv[]) -> int {
     io << input << output;
 
     options_group general("General Options");
-    general << help << version << io;
+    general << help << version << io << method << precision;
 
     options_group ga("GA Options");
     ga << gaMaxSize << gaInitialSize << gaCrossover << gaMutation;
