@@ -11,13 +11,14 @@
 
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <map>
 #include <optional>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
-#include "../../utility/optional.hpp"
 #include "../../fn/casting.hpp"
 #include "../utility/compare.hpp"
 #include "../description/base_option.hpp"
@@ -26,6 +27,12 @@
 
 namespace program_options2 {
 namespace parsing {
+
+template<typename CharT>
+std::basic_stringstream<CharT>
+argument_stream(
+        const std::vector<std::basic_string<CharT>>& args,
+        const std::pair<std::size_t, std::size_t>& indices);
 
 template<typename CharT>
 class basic_command_line_parser {
@@ -69,10 +76,12 @@ public:
         std::map<
             std::reference_wrapper<option_type>,
             std::pair<std::size_t, std::size_t>,
-            utility::less<char_type>> optionIndicies;
+            utility::less<char_type>> optionIndices;
 
         typedef typename std::map<string_type, std::reference_wrapper<option_type>>::iterator nameoption_iterator;
+        typedef typename decltype(optionIndices)::iterator optionindices_iterator;
 
+        optionindices_iterator lastInserted = optionIndices.end();
         for (std::size_t k = 0; k < args.size(); ++k) {
             std::optional<nameoption_iterator> optionalNameIterator;
             if (auto temp1 = nameOption.find(args[k]); temp1 != nameOption.end())
@@ -81,13 +90,19 @@ public:
                 optionalNameIterator = temp2;
 
             if (optionalNameIterator)
-                optionIndicies.emplace(optionalNameIterator.value()->second, std::make_pair(k, k));
+                std::tie(lastInserted, std::ignore) = optionIndices.emplace(optionalNameIterator.value()->second, std::make_pair(k, k));
+
+            if (lastInserted != optionIndices.end())
+                ++(lastInserted->second.second);
+        }
+
+        for (const auto [optionRef, indices] : optionIndices) {
+            std::basic_stringstream<char_type> ss = argument_stream(args, indices);
+            optionRef.get().concept()->read(ss);
         }
 
         return options;
     }
-
-
 
 protected:
     template<typename DataMember, typename F>
@@ -119,6 +134,19 @@ parse_command_line(const basic_command_line_parser<CharT>& parser, std::size_t a
     for (std::size_t k = 0; k < argc; ++k)
         args.push_back(argv[k]);
     return parser(args);
+}
+
+template<typename CharT>
+std::basic_stringstream<CharT>
+argument_stream(
+        const std::vector<std::basic_string<CharT>>& args,
+        const std::pair<std::size_t, std::size_t>& indices) {
+    std::basic_stringstream<CharT> ss;
+    auto b = std::next(args.cbegin(), indices.first);
+    auto e = std::next(args.cbegin(), indices.second + 1);
+    auto osit = std::ostream_iterator<std::basic_string<CharT>>(ss);
+    std::copy(b, e, osit);
+    return ss;
 }
 
 }   //-- namespace parsing --
