@@ -24,13 +24,13 @@ struct basic_names {
 
     inline
     basic_names() :
-        name(name),
-        shortname(shortname)
+        name(),
+        shortname()
     {}
     inline
     basic_names(std::basic_string_view<char_type> name) :
         name(name),
-        shortname(shortname)
+        shortname()
     {}
     inline
     basic_names(std::basic_string_view<char_type> name, std::basic_string_view<char_type> shortname) :

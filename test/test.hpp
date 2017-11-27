@@ -20,6 +20,7 @@
 #include "genetic_algorithm/common/generating/uniform_generator_test.hpp"
 #include "genetic_algorithm/common/coding/numeric_coder_test.hpp"
 #include "genetic_algorithm/common/coding/gray_coder_test.hpp"
+#include "program_options2/parsing/command_line_parser_test.hpp"
 
 
 #define TEST_CLASS_NAME(CLASS_NAME) ::test CLASS_NAME ## _test
@@ -61,6 +62,7 @@ void testing() {
     TEST_RUN_ALL( ::genetic_algorithm::common::generating::uniform_generator )
     TEST_RUN_ALL( ::genetic_algorithm::common::coding::numeric_coder )
     TEST_RUN_ALL( ::genetic_algorithm::common::coding::gray_coder )
+    TEST_RUN_ALL( ::program_options2::parsing::command_line_parser )
 
 #endif
 }

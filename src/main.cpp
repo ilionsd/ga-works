@@ -33,10 +33,11 @@ constexpr double version = 0.15;
 
 void work(const genetic_algorithm::cmn_ga::cmn_ga::parameters&);
 
-auto main(int argc, char* argv[]) -> int {
+auto main(int argc, char** argv) -> int {
 
     ::test::testing();
 
+/*
     using ::io::names::root;
     using ::io::names::path;
     using ::io::names::names;
@@ -138,8 +139,9 @@ auto main(int argc, char* argv[]) -> int {
     options_group allowed("Allowed Options");
     allowed << general << ga << cmnga;
 
-    ::program_options2::parsing::command_line_parser parser(::program_options2::description::options(general));
+    ::program_options2::parsing::command_line_parser parser(::program_options2::description::options(allowed));
     ::program_options2::parsing::parse_command_line(parser, static_cast<std::size_t>(argc), argv);
+*/
 
     return 0;
 }

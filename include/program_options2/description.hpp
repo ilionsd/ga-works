@@ -24,6 +24,8 @@ template<typename CharT> class basic_options_group;
 using  options_group = basic_options_group<char>;
 using woptions_group = basic_options_group<wchar_t>;
 
+//option program;
+
 }   //-- namespace description --
 }   //-- namespace program_options2 --
 

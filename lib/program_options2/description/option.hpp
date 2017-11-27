@@ -22,11 +22,12 @@
 namespace program_options2 {
 namespace description {
 
-template<typename CharT, typename T = void>
+template<typename CharT, typename T = bool>
 class basic_option : public base_option<CharT> {
 public:
     typedef CharT char_type;
     typedef T value_type;
+    typedef basic_option<char_type, value_type> self_type;
     typedef base_option<char_type> base_type;
     typedef typename base_type::stringview_type stringview_type;
     typedef typename base_type::stringstream_type stringstream_type;
@@ -86,6 +87,17 @@ public:
         return bool(mModelPtr);
     }
 
+    inline virtual
+    void
+    mark_present() override {
+        this->mIsPresent = true;
+    }
+    inline virtual
+    void
+    mark_missing() override {
+        this->mIsPresent = false;
+    }
+
     inline
     const std::shared_ptr<model_type>&
     model() const {
@@ -113,10 +125,10 @@ private:
 };
 
 template<typename CharT>
-class basic_option<CharT, void> : public base_option<CharT> {
+class basic_option<CharT, bool> : public base_option<CharT> {
 public:
     typedef CharT char_type;
-    typedef void value_type;
+    typedef bool value_type;
     typedef base_option<char_type> base_type;
     typedef typename base_type::stringview_type stringview_type;
     typedef typename base_type::stringstream_type stringstream_type;
@@ -127,38 +139,40 @@ public:
     inline
     basic_option() :
         base_type(),
-        mModelPtr()
+        mModelPtr(std::make_shared<model_type>())
     {}
     inline
     basic_option(const names_type& names) :
         base_type(names),
-        mModelPtr()
+        mModelPtr(std::make_shared<model_type>())
     {}
     inline
     basic_option(const names_type& names, const stringview_type& description) :
         base_type(names, description),
-        mModelPtr()
+        mModelPtr(std::make_shared<model_type>())
     {}
     inline
     basic_option(const basic_option<char_type, void>& other) :
         base_type(other),
-        mModelPtr()
+        mModelPtr(other.mModelPtr)
     {}
     inline
     basic_option(basic_option<char_type, void>&& other) :
         base_type(other),
-        mModelPtr()
+        mModelPtr(std::move(other.mModelPtr))
     {}
     inline
     basic_option<char_type, void>&
     operator= (const basic_option<char_type, void>& other) {
         base_type::operator =(other);
+        mModelPtr = other.mModelPtr;
         return *this;
     }
     inline
     basic_option<char_type, void>&
     operator= (basic_option<char_type, void>&& other) {
         base_type::operator =(other);
+        mModelPtr = std::move(other.mModelPtr);
         return *this;
     }
 
@@ -167,6 +181,19 @@ public:
     inline virtual
     operator bool() const override {
         return bool(mModelPtr);
+    }
+
+    inline virtual
+    void
+    mark_present() override {
+        this->mIsPresent = true;
+        reset_model();
+    }
+    inline virtual
+    void
+    mark_missing() override {
+        this->mIsPresent = false;
+        reset_model();
     }
 
     inline
@@ -189,6 +216,13 @@ public:
     std::shared_ptr<concept_type>
     concept() override {
         return std::static_pointer_cast<concept_type>(mModelPtr);
+    }
+
+protected:
+    inline
+    void
+    reset_model() {
+        model()->ovalue() = this->mIsPresent;
     }
 
 private:

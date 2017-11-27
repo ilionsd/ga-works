@@ -43,7 +43,7 @@ public:
     typedef std::set<
                 std::reference_wrapper<option_type>,
                 utility::less<CharT>> set;
-    typedef std::vector<option_type> vector;
+    typedef std::vector<std::reference_wrapper<option_type>> vector;
 
     inline
     basic_command_line_parser(const set& optionRefs) :
@@ -89,14 +89,16 @@ public:
             if (auto temp2 = shortnameOption.find(args[k]); temp2 != shortnameOption.end())
                 optionalNameIterator = temp2;
 
-            if (optionalNameIterator)
-                std::tie(lastInserted, std::ignore) = optionIndices.emplace(optionalNameIterator.value()->second, std::make_pair(k, k));
-
-            if (lastInserted != optionIndices.end())
+            if (optionalNameIterator) {
+                std::tie(lastInserted, std::ignore) = optionIndices.emplace(optionalNameIterator.value()->second, std::make_pair(k + 1, k + 1));
+                options.push_back(lastInserted->first);
+            }
+            else if (lastInserted != optionIndices.end())
                 ++(lastInserted->second.second);
         }
 
         for (const auto [optionRef, indices] : optionIndices) {
+            optionRef.get().mark_present();
             std::basic_stringstream<char_type> ss = argument_stream(args, indices);
             optionRef.get().concept()->read(ss);
         }
@@ -143,7 +145,7 @@ argument_stream(
         const std::pair<std::size_t, std::size_t>& indices) {
     std::basic_stringstream<CharT> ss;
     auto b = std::next(args.cbegin(), indices.first);
-    auto e = std::next(args.cbegin(), indices.second + 1);
+    auto e = std::next(args.cbegin(), indices.second);
     auto osit = std::ostream_iterator<std::basic_string<CharT>>(ss);
     std::copy(b, e, osit);
     return ss;

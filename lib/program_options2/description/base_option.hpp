@@ -24,6 +24,7 @@ template<typename CharT>
 class base_option {
 public:
     typedef CharT char_type;
+    typedef base_option<char_type> self_type;
     typedef std::basic_stringstream<char_type> stringstream_type;
     typedef std::basic_string_view<char_type> stringview_type;
     typedef ::io::names::basic_complex_names<char_type> names_type;
@@ -71,6 +72,19 @@ public:
 
     virtual ~base_option() = default;
 
+    inline
+    self_type&
+    operator<< (const names_type& names) {
+        mNames = names;
+        return *this;
+    }
+    inline
+    self_type&
+    operator<< (const stringview_type& description) {
+        mDescription << description;
+        return *this;
+    }
+
     virtual
     operator bool() const = 0;
 
@@ -96,6 +110,24 @@ public:
         return mDescription;
     }
 
+    inline
+    bool
+    is_present() const {
+        return mIsPresent;
+    }
+    inline
+    bool
+    is_missing() const {
+        return !mIsPresent;
+    }
+
+    virtual
+    void
+    mark_present() = 0;
+    virtual
+    void
+    mark_missing() = 0;
+
     virtual
     const std::shared_ptr<concept_type>
     concept() const = 0;
@@ -106,6 +138,7 @@ public:
 protected:
     names_type mNames;
     stringstream_type mDescription;
+    bool mIsPresent = false;
 };
 
 }   //-- namespace description --

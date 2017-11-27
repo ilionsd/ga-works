@@ -14,8 +14,8 @@
 #include <ostream>
 #include <optional>
 
-#include "../../domain/any.hpp"
 #include "concept.hpp"
+#include "invalid_model_value.hpp"
 
 
 namespace io {
@@ -34,52 +34,32 @@ public:
 
     inline
     basic_model() :
-        mValue(),
-        mDefault(),
-        mValidator()
+        mOptionalValue(),
+        mOptionalDefault(),
+        mOptionalValidator()
     {}
     inline
-    basic_model(self_type&& other) :
-        mValue(other.mValue),
-        mDefault(other.mDefault),
-        mValidator(other.mValidator)
+    basic_model(const self_type& other) :
+        mOptionalValue(other.mOptionalValue),
+        mOptionalDefault(other.mOptionalDefault),
+        mOptionalValidator(other.mOptionalValidator)
     {}
 
     virtual ~basic_model() override = default;
 
     inline
     self_type&
-    add_default(value_type&& val) {
-        mDefault = val;
+    add_default(const value_type& val) {
+        mOptionalDefault = val;
         return *this;
     }
     inline
     self_type&
-    add_validator(validator_type&& f) {
-        mValidator = f;
+    add_validator(const validator_type& f) {
+        mOptionalValidator = f;
         return *this;
     }
 
-    inline
-    const std::optional<value_type>&
-    default_value() const {
-        return mDefault;
-    }
-    inline
-    std::optional<value_type>&
-    default_value() {
-        return mDefault;
-    }
-    inline
-    const std::optional<validator_type>&
-    validator() const {
-        return mValidator;
-    }
-    inline
-    std::optional<validator_type>&
-    validator() {
-        return mValidator;
-    }
     inline virtual
     void
     write(ostream_type& os) const override {
@@ -88,26 +68,75 @@ public:
     inline virtual
     void
     read(istream_type& is) override {
-        is >> value();
+        value_type val;
+        is >> val;
+        mOptionalValue = val;
     }
 
     bool validate() const {
-        return mValidator(value());
+        return ovalue().has_value() && (!mOptionalValidator.has_value() || mOptionalValidator.value()(ovalue().value()));
     }
 
-    inline value_type value() const {
-        return mValue;
+    inline
+    const std::optional<value_type>&
+    odefault() const {
+        return mOptionalDefault;
     }
-    inline value_type& value() {
-        return mValue;
+    inline
+    std::optional<value_type>&
+    odefault() {
+        return mOptionalDefault;
+    }
+
+    inline
+    const std::optional<value_type>&
+    ovalue() const {
+        return mOptionalValue;
+    }
+    inline
+    std::optional<value_type>&
+    ovalue() {
+        return mOptionalValue;
+    }
+
+    inline
+    value_type
+    value() const {
+        if (validate())
+            return ovalue().value();
+        else if (odefault())
+            return odefault().value();
+        throw invalid_model_value();
+    }
+    inline
+    value_type
+    value_or(const value_type& other) const {
+        if (validate())
+            return ovalue().value();
+        else if (odefault())
+            return odefault().value();
+        else
+            return other;
+    }
+
+    virtual
+    bool
+    has_value() const override {
+        return validate() || mOptionalDefault.has_value();
+    }
+
+protected:
+    auto as_tuple() {
+        return std::tie(mOptionalValue, mOptionalDefault, mOptionalValidator);
     }
 
 private:
-    std::optional<value_type> mValue;
-    std::optional<value_type> mDefault;
-    std::optional<validator_type> mValidator;
+    std::optional<value_type> mOptionalValue;
+    std::optional<value_type> mOptionalDefault;
+    std::optional<validator_type> mOptionalValidator;
 };
 
+/*
 template<typename CharT>
 class basic_model<CharT, void> final : public basic_concept<CharT> {
 public:
@@ -123,14 +152,26 @@ public:
     inline virtual
     void
     write(ostream_type& os) const override {
-        return;
+        os << mHasValue;
     }
     inline virtual
     void
     read(istream_type& is) override {
-        return;
+        mHasValue = true;
     }
+
+
+
+    inline virtual
+    bool
+    has_value() const override {
+        return mHasValue;
+    }
+
+private:
+    bool mHasValue = false;
 };
+*/
 
 }   //-- namespace model --
 }   //-- namespace io --

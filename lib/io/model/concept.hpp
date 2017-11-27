@@ -30,6 +30,13 @@ struct basic_concept {
 
     virtual void write(ostream_type& os) const = 0;
     virtual void read (istream_type& is) = 0;
+
+    inline
+    operator bool() {
+        return has_value();
+    }
+
+    virtual bool has_value() const = 0;
 };
 
 template<typename CharT>
